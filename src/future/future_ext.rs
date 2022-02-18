@@ -12,6 +12,13 @@ pub trait FutureExt: Future {
     {
         Timeout::new(self, dur)
     }
+    // /// Returns a Future that delays execution for a specified time.
+    // fn delay(self, dur: Duration) -> Delay<Self>
+    // where
+    //     Self: Sized,
+    // {
+    //     Delay::new(self, dur)
+    // }
 }
 
 impl<T> FutureExt for T where T: Future {}

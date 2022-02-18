@@ -10,29 +10,18 @@
 #![deny(missing_debug_implementations)]
 #![warn(missing_docs, future_incompatible, unreachable_pub)]
 
-mod future_ext;
-mod future_timeout;
-mod interval;
-mod sleep;
 pub(crate) mod utils;
 
 /// `std::stream` extensions.
-pub mod stream {
-    pub use crate::interval::{interval, Interval};
-}
+pub mod stream;
 
 /// `std::task` extensions.
-pub mod task {
-    pub use super::sleep::{sleep, Sleep};
-}
+pub mod task;
 
 /// `std::future` extensions.
-pub mod future {
-    pub use super::future_timeout::Timeout;
-    pub use crate::future_ext::FutureExt;
-}
+pub mod future;
 
 /// The `futures-time` prelude.
 pub mod prelude {
-    pub use crate::future_ext::FutureExt as _;
+    pub use super::future::FutureExt as _;
 }
