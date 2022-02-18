@@ -2,7 +2,7 @@
 //!
 //! # Examples
 //!
-//! ```
+//! ```text
 //! // tbi
 //! ```
 
@@ -14,12 +14,25 @@ mod future_ext;
 mod future_timeout;
 mod interval;
 mod sleep;
+pub(crate) mod utils;
 
-pub use future_ext::FutureExt;
-pub use interval::{interval, Interval};
-pub use sleep::{sleep, Sleep};
+/// `std::stream` extensions.
+pub mod stream {
+    pub use crate::interval::{interval, Interval};
+}
 
-/// Future extensions.
+/// `std::task` extensions.
+pub mod task {
+    pub use super::sleep::{sleep, Sleep};
+}
+
+/// `std::future` extensions.
 pub mod future {
-    pub use super::future_timeout::{timeout, Timeout, TimeoutError};
+    pub use super::future_timeout::Timeout;
+    pub use crate::future_ext::FutureExt;
+}
+
+/// The `futures-time` prelude.
+pub mod prelude {
+    pub use crate::future_ext::FutureExt as _;
 }

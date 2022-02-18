@@ -13,3 +13,5 @@ pub trait FutureExt: Future {
         Timeout::new(self, dur)
     }
 }
+
+impl<T> FutureExt for T where T: Future {}
