@@ -24,7 +24,6 @@ pin_project! {
 }
 
 impl Sleep {
-    #[allow(dead_code)]
     pub(super) fn new(dur: Duration) -> Sleep {
         Sleep {
             delay: Timer::after(dur),
