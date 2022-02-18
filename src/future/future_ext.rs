@@ -1,7 +1,7 @@
 use core::future::Future;
 use std::time::Duration;
 
-use crate::future::Timeout;
+use super::{Delay, Timeout};
 
 /// Extend `Future` with time-based operations.
 pub trait FutureExt: Future {
@@ -12,13 +12,13 @@ pub trait FutureExt: Future {
     {
         Timeout::new(self, dur)
     }
-    // /// Returns a Future that delays execution for a specified time.
-    // fn delay(self, dur: Duration) -> Delay<Self>
-    // where
-    //     Self: Sized,
-    // {
-    //     Delay::new(self, dur)
-    // }
+    /// Returns a Future that delays execution for a specified time.
+    fn delay(self, dur: Duration) -> Delay<Self>
+    where
+        Self: Sized,
+    {
+        Delay::new(self, dur)
+    }
 }
 
 impl<T> FutureExt for T where T: Future {}
