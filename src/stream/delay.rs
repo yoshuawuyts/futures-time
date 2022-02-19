@@ -9,8 +9,7 @@ use core::task::{Context, Poll};
 use futures_core::stream::Stream;
 
 pin_project! {
-    #[doc(hidden)]
-    #[allow(missing_debug_implementations)]
+    /// Delay execution of a stream once for the specified duration.
     pub struct Delay<S> {
         #[pin]
         stream: S,

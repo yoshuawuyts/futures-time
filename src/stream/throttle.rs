@@ -9,7 +9,7 @@ use core::task::{Context, Poll};
 use futures_core::stream::Stream;
 
 pin_project! {
-    /// Throttle the stream.
+    /// Filter out all items after the first for a specified time.
     #[derive(Debug)]
     pub struct Throttle<S: Stream> {
         #[pin]
