@@ -1,6 +1,6 @@
 [package]
 name = "futures-time"
-version = "0.0.0"
+version = "0.1.0"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/yoshuawuyts/futures-time"
 documentation = "https://docs.rs/futures-time"
