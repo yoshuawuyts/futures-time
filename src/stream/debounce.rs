@@ -41,8 +41,8 @@ impl<S: Stream> Stream for Debounce<S> {
         let mut this = self.project();
 
         match this.stream.poll_next(cx) {
-            Poll::Ready(Some(v)) => {
-                *this.slot = Some(v);
+            Poll::Ready(Some(value)) => {
+                *this.slot = Some(value);
                 *this.delay.as_mut() = Timer::after(*this.boundary);
                 Poll::Pending
             }

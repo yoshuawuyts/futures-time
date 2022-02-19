@@ -21,3 +21,4 @@ async-io = "1.6.0"
 pin-project-lite = "0.2.8"
 
 [dev-dependencies]
+futures-lite = "1.12.0"

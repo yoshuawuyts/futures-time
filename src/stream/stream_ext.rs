@@ -2,7 +2,7 @@ use std::time::{Duration, Instant};
 
 use futures_core::Stream;
 
-use super::{Debounce, Delay, DelayUntil, Timeout, TimeoutAt};
+use super::{Debounce, Delay, DelayUntil, Throttle, Timeout, TimeoutAt};
 
 /// Extend `Stream` with time-based operations.
 pub trait StreamExt: Stream {
@@ -15,11 +15,11 @@ pub trait StreamExt: Stream {
     }
 
     /// Returns a stream that delays execution for a specified duration.
-    fn delay(self, dur: Duration) -> Delay<Self>
+    fn delay(self, boundary: Duration) -> Delay<Self>
     where
         Self: Sized,
     {
-        Delay::new(self, dur)
+        Delay::new(self, boundary)
     }
 
     /// Returns a stream that delays execution until a specified deadline.
@@ -30,12 +30,20 @@ pub trait StreamExt: Stream {
         DelayUntil::new(self, deadline)
     }
 
-    /// Await a stream or times out after a duration of time.     
-    fn timeout(self, dur: Duration) -> Timeout<Self>
+    /// Throtlle a stream.
+    fn throttle(self, boundary: Duration) -> Throttle<Self>
     where
         Self: Sized,
     {
-        Timeout::new(self, dur)
+        Throttle::new(self, boundary)
+    }
+
+    /// Await a stream or times out after a duration of time.     
+    fn timeout(self, boundary: Duration) -> Timeout<Self>
+    where
+        Self: Sized,
+    {
+        Timeout::new(self, boundary)
     }
 
     /// Await a stream or time out at the given deadline.

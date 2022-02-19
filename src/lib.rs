@@ -24,4 +24,5 @@ pub mod future;
 /// The `futures-time` prelude.
 pub mod prelude {
     pub use super::future::FutureExt as _;
+    pub use super::stream::StreamExt as _;
 }
