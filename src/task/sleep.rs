@@ -7,7 +7,7 @@ use pin_project_lite::pin_project;
 use async_io::Timer;
 use core::task::{Context, Poll};
 
-/// Awaits a future or times out after a duration of time.
+/// Sleeps for the specified amount of time.
 pub fn sleep<F, T>(dur: Duration) -> Sleep
 where
     F: Future<Output = T>,
@@ -16,7 +16,7 @@ where
 }
 
 pin_project! {
-    /// A future that times out after a duration of time.
+    /// Sleeps for the specified amount of time.
     pub struct Sleep {
         #[pin]
         delay: Timer,
