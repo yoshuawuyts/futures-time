@@ -69,8 +69,7 @@ impl<S: Stream> Stream for Debounce<S> {
                 None => {
                     *this.exhausted = true;
                     *this.done = true;
-                    cx.waker().wake_by_ref();
-                    Poll::Pending
+                    Poll::Ready(None)
                 }
             },
             Poll::Pending => match this.timer.as_mut().poll(cx) {

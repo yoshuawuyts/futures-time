@@ -1,3 +1,4 @@
+mod buffer;
 mod debounce;
 mod delay;
 mod delay_until;
@@ -7,6 +8,7 @@ mod throttle;
 mod timeout;
 mod timeout_at;
 
+pub use buffer::Buffer;
 pub use debounce::Debounce;
 pub use delay::Delay;
 pub use delay_until::DelayUntil;

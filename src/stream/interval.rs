@@ -1,7 +1,7 @@
 use std::future::Future;
 use std::pin::Pin;
 use std::task::{Context, Poll};
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use async_io::Timer;
 use futures_core::stream::Stream;
@@ -20,7 +20,7 @@ use futures_core::stream::Stream;
 /// otherwise indicated to fire at.
 pub fn interval(dur: Duration) -> Interval {
     Interval {
-        delay: Timer::after(dur),
+        timer: Timer::after(dur),
         interval: dur,
     }
 }
@@ -33,19 +33,20 @@ pub fn interval(dur: Duration) -> Interval {
 /// [`interval`]: fn.interval.html
 #[derive(Debug)]
 pub struct Interval {
-    delay: Timer,
+    timer: Timer,
     interval: Duration,
 }
 
 impl Stream for Interval {
-    type Item = ();
+    type Item = Instant;
 
     fn poll_next(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
-        if Pin::new(&mut self.delay).poll(cx).is_pending() {
-            return Poll::Pending;
-        }
+        let instant = match Pin::new(&mut self.timer).poll(cx) {
+            Poll::Ready(instant) => instant,
+            Poll::Pending => return Poll::Pending,
+        };
         let interval = self.interval;
-        let _ = std::mem::replace(&mut self.delay, Timer::after(interval));
-        Poll::Ready(Some(()))
+        let _ = std::mem::replace(&mut self.timer, Timer::after(interval));
+        Poll::Ready(Some(instant))
     }
 }

@@ -2,10 +2,19 @@ use std::time::{Duration, Instant};
 
 use futures_core::Stream;
 
-use super::{Debounce, Delay, DelayUntil, Throttle, Timeout, TimeoutAt};
+use super::{Buffer, Debounce, Delay, DelayUntil, Throttle, Timeout, TimeoutAt};
 
 /// Extend `Stream` with time-based operations.
 pub trait StreamExt: Stream {
+    /// Returns a stream which buffers items until it yields them at each
+    /// `boundary`.
+    fn buffer(self, boundary: Duration) -> Buffer<Self>
+    where
+        Self: Sized,
+    {
+        Buffer::new(self, boundary)
+    }
+
     /// Returns a stream that debounces for the given boundary.
     fn debounce(self, boundary: Duration) -> Debounce<Self>
     where
