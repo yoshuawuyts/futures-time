@@ -1,12 +1,14 @@
 use std::pin::Pin;
 use std::time::Duration;
-use std::{future::Future, time::Instant};
 
 use pin_project_lite::pin_project;
 
-use async_io::Timer;
 use core::task::{Context, Poll};
 use futures_core::stream::Stream;
+
+use crate::stream::Interval;
+
+use super::interval;
 
 pin_project! {
     /// Filter out all items after the first for a specified time.
@@ -15,25 +17,31 @@ pin_project! {
         #[pin]
         stream: S,
         #[pin]
-        delay: Timer,
-        boundary: Duration,
-        deadline: Option<Instant>,
+        interval: Interval,
+        state: State,
         slot: Option<S::Item>,
     }
 }
 
 impl<S: Stream> Throttle<S> {
     pub(crate) fn new(stream: S, boundary: Duration) -> Self {
-        let delay = Timer::after(boundary);
-
         Self {
+            state: State::Streaming,
             stream,
-            delay,
-            boundary,
-            deadline: None,
+            interval: interval(boundary),
             slot: None,
         }
     }
+}
+
+#[derive(Debug)]
+enum State {
+    /// The underlying stream is yielding items.
+    Streaming,
+    /// All timers have completed and all data has been yielded.
+    StreamDone,
+    /// The closing `Ready(None)` has been yielded.
+    AllDone,
 }
 
 impl<S: Stream> Stream for Throttle<S> {
@@ -42,43 +50,40 @@ impl<S: Stream> Stream for Throttle<S> {
     fn poll_next(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
         let mut this = self.project();
 
-        match this.stream.poll_next(cx) {
-            Poll::Ready(Some(value)) => match this.deadline {
-                Some(deadline) => {
-                    *this.slot = Some(value);
-                    if &Instant::now() >= deadline {
-                        let deadline = Instant::now() + *this.boundary;
-                        *this.delay.as_mut() = Timer::at(deadline);
-                        *this.deadline = Some(deadline);
-                        Poll::Ready(this.slot.take())
-                    } else {
-                        Poll::Pending
+        match this.state {
+            // The underlying stream is yielding items.
+            State::Streaming => {
+                // Poll the underlying stream until we get to `Poll::Pending`.
+                loop {
+                    match this.stream.as_mut().poll_next(cx) {
+                        Poll::Ready(Some(value)) => {
+                            let _ = this.slot.insert(value);
+                        }
+                        Poll::Ready(None) => {
+                            *this.state = State::StreamDone;
+                            break;
+                        }
+                        Poll::Pending => break,
                     }
                 }
-                None => {
-                    *this.slot = None;
-                    let deadline = Instant::now() + *this.boundary;
-                    *this.delay.as_mut() = Timer::at(deadline);
-                    *this.deadline = Some(deadline);
-                    Poll::Ready(Some(value))
-                }
-            },
-            Poll::Ready(None) => Poll::Ready(None),
-            Poll::Pending => match this.delay.as_mut().poll(cx) {
-                Poll::Ready(_) => match this.slot.take() {
-                    Some(item) => {
-                        let deadline = Instant::now() + *this.boundary;
-                        *this.delay.as_mut() = Timer::at(deadline);
-                        *this.deadline = Some(deadline);
-                        Poll::Ready(Some(item))
+
+                // After the stream, always poll the interval timer.
+                this.interval.as_mut().poll_next(cx).map(move |_| {
+                    if let State::StreamDone = this.state {
+                        cx.waker().wake_by_ref();
                     }
-                    None => {
-                        *this.deadline = None;
-                        Poll::Pending
-                    }
-                },
-                Poll::Pending => return Poll::Pending,
-            },
+                    this.slot.take()
+                })
+            }
+
+            // All streams have completed and all data has been yielded.
+            State::StreamDone => {
+                *this.state = State::AllDone;
+                Poll::Ready(None)
+            }
+
+            // The closing `Ready(None)` has been yielded.
+            State::AllDone => panic!("stream polled after completion"),
         }
     }
 }
@@ -92,17 +97,20 @@ mod test {
     #[test]
     fn smoke() {
         async_io::block_on(async {
-            let bound = Duration::from_millis(10);
-            let throttle_bound = Duration::from_millis(20);
+            let interval = Duration::from_millis(100);
+            let throttle = Duration::from_millis(200);
+
+            let take = 4;
+            let expected = 2;
 
             let mut counter = 0;
-            crate::stream::interval(bound)
-                .take(10)
-                .throttle(throttle_bound)
+            crate::stream::interval(interval)
+                .take(take)
+                .throttle(throttle)
                 .for_each(|_| counter += 1)
                 .await;
 
-            assert_eq!(counter, 5);
+            assert_eq!(counter, expected);
         })
     }
 }

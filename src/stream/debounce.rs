@@ -109,7 +109,7 @@ mod test {
     #[test]
     fn no_debounces_hit() {
         async_io::block_on(async {
-            let bound = Duration::from_millis(20);
+            let bound = Duration::from_millis(40);
             let debounce_bound = Duration::from_millis(10);
 
             let mut counter = 0;
