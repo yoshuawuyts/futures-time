@@ -25,7 +25,7 @@ pub fn sleep_until(deadline: Instant) -> Sleep {
 
 pin_project! {
     /// Sleeps for the specified amount of time.
-    #[must_use = "Futures do nothing unless polled or .awaited"]
+    #[must_use = "futures do nothing unless polled or .awaited"]
     pub struct Sleep {
         #[pin]
         timer: Timer,
@@ -37,7 +37,7 @@ impl Future for Sleep {
     type Output = Instant;
 
     fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
-        assert!(!self.completed, "Future polled after completing");
+        assert!(!self.completed, "future polled after completing");
         let this = self.project();
         match this.timer.poll(cx) {
             Poll::Ready(instant) => {

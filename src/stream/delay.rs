@@ -10,21 +10,29 @@ use futures_core::stream::Stream;
 
 pin_project! {
     /// Delay execution of a stream once for the specified duration.
+    #[derive(Debug)]
+    #[must_use = "streams do nothing unless polled or .awaited"]
     pub struct Delay<S> {
         #[pin]
         stream: S,
         #[pin]
-        delay: Timer,
-        delay_done: bool,
+        timer: Timer,
+        state: State,
     }
+}
+
+#[derive(Debug)]
+enum State {
+    Timer,
+    Streaming,
 }
 
 impl<S> Delay<S> {
     pub(super) fn new(stream: S, dur: Duration) -> Self {
         Delay {
             stream,
-            delay: Timer::after(dur),
-            delay_done: false,
+            timer: Timer::after(dur),
+            state: State::Timer,
         }
     }
 }
@@ -38,11 +46,15 @@ where
     fn poll_next(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
         let this = self.project();
 
-        if !*this.delay_done {
-            futures_core::ready!(this.delay.poll(cx));
-            *this.delay_done = true;
+        match this.state {
+            State::Timer => match this.timer.poll(cx) {
+                Poll::Pending => return Poll::Pending,
+                Poll::Ready(_) => {
+                    *this.state = State::Streaming;
+                    this.stream.poll_next(cx)
+                }
+            },
+            State::Streaming => this.stream.poll_next(cx),
         }
-
-        this.stream.poll_next(cx)
     }
 }

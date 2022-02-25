@@ -11,6 +11,7 @@ use core::task::{Context, Poll};
 
 pin_project! {
     /// A future that times out after a duration of time.
+    #[must_use = "futures do nothing unless polled or .awaited"]
     pub struct Timeout<F> {
         #[pin]
         future: F,

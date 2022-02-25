@@ -7,7 +7,7 @@ use core::task::{Context, Poll};
 
 pin_project! {
     /// A future that delays execution by the specified time.
-    #[must_use = "Futures do nothing unless polled or .awaited"]
+    #[must_use = "futures do nothing unless polled or .awaited"]
     #[derive(Debug)]
     pub struct Delay<F, D> {
         #[pin]

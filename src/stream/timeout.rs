@@ -14,6 +14,7 @@ use crate::utils;
 pin_project! {
     /// A stream with timeout time set
     #[derive(Debug)]
+    #[must_use = "streams do nothing unless polled or .awaited"]
     pub struct Timeout<S: Stream> {
         #[pin]
         stream: S,

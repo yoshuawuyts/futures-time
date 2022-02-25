@@ -31,6 +31,7 @@ pub fn interval(dur: Duration) -> Interval {
 /// documentation for more.
 ///
 /// [`interval`]: fn.interval.html
+#[must_use = "streams do nothing unless polled or .awaited"]
 #[derive(Debug)]
 pub struct Interval {
     timer: Timer,
