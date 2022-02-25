@@ -1,48 +1,48 @@
 use crate::utils::timeout_err;
+
 use std::future::Future;
 use std::io;
 use std::pin::Pin;
-use std::time::Duration;
+use std::task::{Context, Poll};
 
 use pin_project_lite::pin_project;
-
-use async_io::Timer;
-use core::task::{Context, Poll};
 
 pin_project! {
     /// A future that times out after a duration of time.
     #[must_use = "futures do nothing unless polled or .awaited"]
-    pub struct Timeout<F> {
+    pub struct Timeout<F, D> {
         #[pin]
         future: F,
         #[pin]
-        delay: Timer,
+        deadline: D,
         completed: bool,
     }
 }
 
-impl<F> Timeout<F> {
-    pub(super) fn new(future: F, dur: Duration) -> Self {
+impl<F, D> Timeout<F, D> {
+    pub(super) fn new(future: F, deadline: D) -> Self {
         Self {
             future,
-            delay: Timer::after(dur),
+            deadline,
             completed: false,
         }
     }
 }
 
-impl<F: Future> Future for Timeout<F> {
+impl<F: Future, D: Future> Future for Timeout<F, D> {
     type Output = io::Result<F::Output>;
 
     fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
-        assert!(!self.completed, "Future polled after completing");
         let this = self.project();
+
+        assert!(!*this.completed, "future polled after completing");
+
         match this.future.poll(cx) {
             Poll::Ready(v) => {
                 *this.completed = true;
                 Poll::Ready(Ok(v))
             }
-            Poll::Pending => match this.delay.poll(cx) {
+            Poll::Pending => match this.deadline.poll(cx) {
                 Poll::Ready(_) => {
                     *this.completed = true;
                     Poll::Ready(Err(timeout_err("future timed out")))

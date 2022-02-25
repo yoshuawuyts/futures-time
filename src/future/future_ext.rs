@@ -8,11 +8,12 @@ use super::{Delay, Timeout};
 /// Extend `Future` with time-based operations.
 pub trait FutureExt: Future {
     /// Await a future or times out after a duration of time.     
-    fn timeout(self, dur: Duration) -> Timeout<Self>
+    fn timeout(self, dur: Duration) -> Timeout<Self, Sleep>
     where
         Self: Sized,
     {
-        Timeout::new(self, dur)
+        let deadline = crate::task::sleep(dur);
+        Timeout::new(self, deadline)
     }
 
     /// Returns a future that delays execution for a specified time.
