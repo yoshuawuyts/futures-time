@@ -1,4 +1,3 @@
-use std::future::Future;
 use std::pin::Pin;
 use std::task::{Context, Poll};
 
@@ -6,7 +5,7 @@ use futures_core::ready;
 use futures_core::stream::Stream;
 use pin_project_lite::pin_project;
 
-use crate::future::ResetFuture;
+use crate::future::ResetDeadlineFuture;
 
 pin_project! {
     /// Debounce the stream.
@@ -50,7 +49,7 @@ impl<S: Stream, D> Debounce<S, D> {
 impl<S, D> Stream for Debounce<S, D>
 where
     S: Stream,
-    D: Future + ResetFuture,
+    D: ResetDeadlineFuture,
 {
     type Item = S::Item;
 
@@ -62,7 +61,7 @@ where
             match this.stream.poll_next(cx) {
                 Poll::Ready(Some(item)) => {
                     *this.slot = Some(item);
-                    this.deadline.as_mut().reset();
+                    this.deadline.as_mut().reset_deadline();
                 }
                 Poll::Ready(None) => match *this.slot {
                     Some(_) => *this.state = State::FinalItem,

@@ -6,9 +6,11 @@ use std::{future::Future, time::Instant};
 use async_io::Timer;
 use pin_project_lite::pin_project;
 
-use crate::future::ResetFuture;
+use crate::future::ResetDeadlineFuture;
 
 /// Sleeps for the specified amount of time.
+///
+/// This future can be `reset` to be moved
 pub fn sleep(dur: Duration) -> Sleep {
     Sleep {
         dur,
@@ -44,9 +46,9 @@ impl Future for Sleep {
     }
 }
 
-impl ResetFuture for Sleep {
+impl ResetDeadlineFuture for Sleep {
     /// Resets the timer to be `Instant::now()` + `Duration` into the future.
-    fn reset(self: std::pin::Pin<&mut Self>) {
+    fn reset_deadline(self: std::pin::Pin<&mut Self>) {
         let mut this = self.project();
         this.timer.set_after(*this.dur);
         *this.completed = false;

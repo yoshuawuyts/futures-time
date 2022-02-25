@@ -8,8 +8,7 @@ use super::{interval, Buffer, Debounce, Delay, Interval, Throttle, Timeout};
 
 /// Extend `Stream` with time-based operations.
 pub trait StreamExt: Stream {
-    /// Returns a stream which buffers items until it yields them at each
-    /// `duration`.
+    /// Returns a stream which buffers items and flushes them at each interval.
     fn buffer(self, duration: Duration) -> Buffer<Self, Interval>
     where
         Self: Sized,

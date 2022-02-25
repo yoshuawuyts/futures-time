@@ -7,7 +7,7 @@ use core::task::{Context, Poll};
 use futures_core::stream::Stream;
 
 pin_project! {
-    /// Debounce the stream.
+    /// Buffer items and flushes them at each interval.
     #[derive(Debug)]
     #[must_use = "streams do nothing unless polled or .awaited"]
     pub struct Buffer<S: Stream, I> {
