@@ -1,8 +1,19 @@
 //! Async time operators.
 //!
-//! This crate provides ergonomic
+//! ## About
+//!
+//! This crate provides ergonomic, async time-based operations. It serves as an
+//! experimental playground to experiment with how we could potentially add
+//! time-based operations to `async-std`, and subsequently the stdlib.
+//!
+//! The goal is to make working with time and other events feel natural. A major
+//! source of inspiration for this has been RxJS, which uses events (including
+//! time) to trigger operations. This crate takes that principle, inverts the
+//! model to make it evaluate lazily, and wraps it in an ergnomic Rust
+//! interface.
 //!
 //! # Futures
+//!
 //! - [`task::sleep`] Sleeps for the specified amount of time.
 //! - [`task::sleep_until`] Sleeps until the specified deadline.
 //! - [`Future::delay`](`future::FutureExt::delay`) Delay execution for a specified time.
