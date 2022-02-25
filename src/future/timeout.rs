@@ -16,6 +16,7 @@ pin_project! {
         future: F,
         #[pin]
         delay: Timer,
+        completed: bool,
     }
 }
 
@@ -24,6 +25,7 @@ impl<F> Timeout<F> {
         Self {
             future,
             delay: Timer::after(dur),
+            completed: false,
         }
     }
 }
@@ -32,11 +34,18 @@ impl<F: Future> Future for Timeout<F> {
     type Output = io::Result<F::Output>;
 
     fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
+        assert!(!self.completed, "Future polled after completing");
         let this = self.project();
         match this.future.poll(cx) {
-            Poll::Ready(v) => Poll::Ready(Ok(v)),
+            Poll::Ready(v) => {
+                *this.completed = true;
+                Poll::Ready(Ok(v))
+            }
             Poll::Pending => match this.delay.poll(cx) {
-                Poll::Ready(_) => Poll::Ready(Err(timeout_err("future timed out"))),
+                Poll::Ready(_) => {
+                    *this.completed = true;
+                    Poll::Ready(Err(timeout_err("future timed out")))
+                }
                 Poll::Pending => Poll::Pending,
             },
         }
