@@ -1,35 +1,30 @@
 use std::mem;
 use std::pin::Pin;
-use std::time::Duration;
 
 use pin_project_lite::pin_project;
 
 use core::task::{Context, Poll};
 use futures_core::stream::Stream;
 
-use crate::stream::Interval;
-
-use super::interval;
-
 pin_project! {
     /// Debounce the stream.
     #[derive(Debug)]
     #[must_use = "streams do nothing unless polled or .awaited"]
-    pub struct Buffer<S: Stream> {
+    pub struct Buffer<S: Stream, I> {
         #[pin]
         stream: S,
         #[pin]
-        interval: Interval,
+        interval: I,
         slot: Vec<S::Item>,
         state: State,
     }
 }
 
-impl<S: Stream> Buffer<S> {
-    pub(crate) fn new(stream: S, boundary: Duration) -> Self {
+impl<S: Stream, I> Buffer<S, I> {
+    pub(crate) fn new(stream: S, interval: I) -> Self {
         Self {
             stream,
-            interval: interval(boundary),
+            interval,
             slot: vec![],
             state: State::Streaming,
         }
@@ -48,7 +43,7 @@ enum State {
     AllDone,
 }
 
-impl<S: Stream> Stream for Buffer<S> {
+impl<S: Stream, I: Stream> Stream for Buffer<S, I> {
     type Item = Vec<S::Item>;
 
     fn poll_next(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
