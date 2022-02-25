@@ -1,6 +1,8 @@
 use core::future::Future;
 use std::time::{Duration, Instant};
 
+use crate::task::SleepUntil;
+
 use super::{Delay, DelayUntil, Timeout, TimeoutAt};
 
 /// Extend `Future` with time-based operations.
@@ -30,10 +32,12 @@ pub trait FutureExt: Future {
     }
 
     /// Returns a future that delays execution for a specified time.
-    fn delay_until(self, deadline: Instant) -> DelayUntil<Self>
+    fn delay_until<D: Future>(self, deadline: Instant) -> DelayUntil<Self, SleepUntil>
     where
+        D: Future,
         Self: Sized,
     {
+        let deadline = crate::task::sleep_until(deadline);
         DelayUntil::new(self, deadline)
     }
 }
