@@ -1,7 +1,7 @@
 use core::future::Future;
 use std::time::{Duration, Instant};
 
-use crate::task::Sleep;
+use crate::task::{Sleep, SleepUntil};
 
 use super::{Delay, Timeout};
 
@@ -17,7 +17,7 @@ pub trait FutureExt: Future {
     }
 
     /// Returns a future that delays execution for a specified time.
-    fn delay<D: Future>(self, deadline: Instant) -> Delay<Self, Sleep>
+    fn delay<D: Future>(self, deadline: Instant) -> Delay<Self, SleepUntil>
     where
         Self: Sized,
     {

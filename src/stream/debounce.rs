@@ -17,7 +17,7 @@ pin_project! {
         stream: S,
         #[pin]
         timer: Timer,
-        boundary: Duration,
+        duration: Duration,
         slot: Option<S::Item>,
         exhausted: bool,
         done: bool,
@@ -25,13 +25,13 @@ pin_project! {
 }
 
 impl<S: Stream> Debounce<S> {
-    pub(crate) fn new(stream: S, boundary: Duration) -> Self {
-        let timer = Timer::after(boundary);
+    pub(crate) fn new(stream: S, duration: Duration) -> Self {
+        let timer = Timer::after(duration);
 
         Self {
             stream,
             timer,
-            boundary,
+            duration,
             slot: None,
             exhausted: false,
             done: false,
@@ -55,7 +55,7 @@ impl<S: Stream> Stream for Debounce<S> {
         match this.stream.poll_next(cx) {
             Poll::Ready(Some(value)) => {
                 *this.slot = Some(value);
-                *this.timer.as_mut() = Timer::after(*this.boundary);
+                *this.timer.as_mut() = Timer::after(*this.duration);
                 match this.timer.as_mut().poll(cx) {
                     Poll::Ready(_) => Poll::Ready(this.slot.take()),
                     Poll::Pending => Poll::Pending,

@@ -1,35 +1,29 @@
-use std::pin::Pin;
-use std::time::Duration;
-
 use pin_project_lite::pin_project;
 
-use core::task::{Context, Poll};
 use futures_core::stream::Stream;
-
-use crate::stream::Interval;
-
-use super::interval;
+use std::pin::Pin;
+use std::task::{Context, Poll};
 
 pin_project! {
     /// Filter out all items after the first for a specified time.
     #[derive(Debug)]
     #[must_use = "streams do nothing unless polled or .awaited"]
-    pub struct Throttle<S: Stream> {
+    pub struct Throttle<S: Stream, I> {
         #[pin]
         stream: S,
         #[pin]
-        interval: Interval,
+        interval: I,
         state: State,
         slot: Option<S::Item>,
     }
 }
 
-impl<S: Stream> Throttle<S> {
-    pub(crate) fn new(stream: S, boundary: Duration) -> Self {
+impl<S: Stream, I> Throttle<S, I> {
+    pub(crate) fn new(stream: S, interval: I) -> Self {
         Self {
             state: State::Streaming,
             stream,
-            interval: interval(boundary),
+            interval,
             slot: None,
         }
     }
@@ -45,7 +39,7 @@ enum State {
     AllDone,
 }
 
-impl<S: Stream> Stream for Throttle<S> {
+impl<S: Stream, I: Stream> Stream for Throttle<S, I> {
     type Item = S::Item;
 
     fn poll_next(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {

@@ -1,42 +1,33 @@
 use std::future::Future;
 use std::io;
 use std::pin::Pin;
-use std::time::Duration;
 
 use pin_project_lite::pin_project;
 
-use async_io::Timer;
 use core::task::{Context, Poll};
 use futures_core::stream::Stream;
 
-use crate::utils;
+use crate::{future::ResetFuture, utils};
 
 pin_project! {
     /// A stream with timeout time set
     #[derive(Debug)]
     #[must_use = "streams do nothing unless polled or .awaited"]
-    pub struct Timeout<S: Stream> {
+    pub struct Timeout<S, D> {
         #[pin]
         stream: S,
         #[pin]
-        delay: Timer,
-        duration: Duration,
+        deadline: D,
     }
 }
 
-impl<S: Stream> Timeout<S> {
-    pub(crate) fn new(stream: S, dur: Duration) -> Self {
-        let delay = Timer::after(dur);
-
-        Self {
-            stream,
-            delay,
-            duration: dur,
-        }
+impl<S, D> Timeout<S, D> {
+    pub(crate) fn new(stream: S, deadline: D) -> Self {
+        Self { stream, deadline }
     }
 }
 
-impl<S: Stream> Stream for Timeout<S> {
+impl<S: Stream, D: Future + ResetFuture> Stream for Timeout<S, D> {
     type Item = io::Result<S::Item>;
 
     fn poll_next(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
@@ -45,13 +36,13 @@ impl<S: Stream> Stream for Timeout<S> {
         let r = match this.stream.poll_next(cx) {
             Poll::Ready(Some(v)) => Poll::Ready(Some(Ok(v))),
             Poll::Ready(None) => Poll::Ready(None),
-            Poll::Pending => match this.delay.as_mut().poll(cx) {
+            Poll::Pending => match this.deadline.as_mut().poll(cx) {
                 Poll::Ready(_) => Poll::Ready(Some(Err(utils::timeout_err("stream timed out")))),
                 Poll::Pending => return Poll::Pending,
             },
         };
 
-        *this.delay.as_mut() = Timer::after(*this.duration);
+        this.deadline.as_mut().reset();
 
         r
     }
