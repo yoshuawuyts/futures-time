@@ -49,5 +49,6 @@ impl ResetFuture for Sleep {
     fn reset(self: std::pin::Pin<&mut Self>) {
         let mut this = self.project();
         this.timer.set_after(*this.dur);
+        *this.completed = false;
     }
 }

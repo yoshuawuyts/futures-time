@@ -1,85 +1,99 @@
 use std::future::Future;
 use std::pin::Pin;
-use std::time::Duration;
+use std::task::{Context, Poll};
 
+use futures_core::ready;
+use futures_core::stream::Stream;
 use pin_project_lite::pin_project;
 
-use async_io::Timer;
-use core::task::{Context, Poll};
-use futures_core::stream::Stream;
+use crate::future::ResetFuture;
 
 pin_project! {
     /// Debounce the stream.
     #[derive(Debug)]
     #[must_use = "streams do nothing unless polled or .awaited"]
-    pub struct Debounce<S: Stream> {
+    pub struct Debounce<S: Stream, D> {
         #[pin]
         stream: S,
         #[pin]
-        timer: Timer,
-        duration: Duration,
+        deadline: D,
         slot: Option<S::Item>,
-        exhausted: bool,
-        done: bool,
+        state: State,
     }
 }
 
-impl<S: Stream> Debounce<S> {
-    pub(crate) fn new(stream: S, duration: Duration) -> Self {
-        let timer = Timer::after(duration);
+/// Internal state.
+#[derive(Debug)]
+enum State {
+    /// We're actively streaming and may have data.
+    Streaming,
+    /// The stream has ended, but we need to send the final `Ready(Some(Item))`
+    /// and `Ready(None)` messages.
+    FinalItem,
+    /// The stream has ended, but we need to send the final `Ready(None)` message.
+    SendingNone,
+    /// The stream has completed.
+    Finished,
+}
 
+impl<S: Stream, D> Debounce<S, D> {
+    pub(crate) fn new(stream: S, deadline: D) -> Self {
         Self {
             stream,
-            timer,
-            duration,
+            deadline,
             slot: None,
-            exhausted: false,
-            done: false,
+            state: State::Streaming,
         }
     }
 }
 
-impl<S: Stream> Stream for Debounce<S> {
+impl<S, D> Stream for Debounce<S, D>
+where
+    S: Stream,
+    D: Future + ResetFuture,
+{
     type Item = S::Item;
 
     fn poll_next(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
         let mut this = self.project();
 
-        if *this.done {
-            panic!("stream polled after completion");
-        } else if *this.exhausted {
-            *this.done = true;
-            return Poll::Ready(None);
+        // See if we need to get more data from the stream.
+        if let State::Streaming = this.state {
+            match this.stream.poll_next(cx) {
+                Poll::Ready(Some(item)) => {
+                    *this.slot = Some(item);
+                    this.deadline.as_mut().reset();
+                }
+                Poll::Ready(None) => match *this.slot {
+                    Some(_) => *this.state = State::FinalItem,
+                    None => *this.state = State::SendingNone,
+                },
+                _ => {}
+            };
         }
 
-        match this.stream.poll_next(cx) {
-            Poll::Ready(Some(value)) => {
-                *this.slot = Some(value);
-                *this.timer.as_mut() = Timer::after(*this.duration);
-                match this.timer.as_mut().poll(cx) {
-                    Poll::Ready(_) => Poll::Ready(this.slot.take()),
-                    Poll::Pending => Poll::Pending,
+        // Handle the timer.
+        match this.state {
+            State::Streaming => match this.slot.is_some() {
+                true => {
+                    ready!(this.deadline.as_mut().poll(cx));
+                    Poll::Ready(this.slot.take())
                 }
+                false => Poll::Pending,
+            },
+
+            State::FinalItem => {
+                let _ = futures_core::ready!(this.deadline.as_mut().poll(cx));
+                *this.state = State::SendingNone;
+                cx.waker().wake_by_ref();
+                Poll::Ready(this.slot.take())
             }
-            Poll::Ready(None) => match this.slot.take() {
-                Some(value) => {
-                    *this.exhausted = true;
-                    cx.waker().wake_by_ref();
-                    Poll::Ready(Some(value))
-                }
-                None => {
-                    *this.exhausted = true;
-                    *this.done = true;
-                    Poll::Ready(None)
-                }
-            },
-            Poll::Pending => match this.timer.as_mut().poll(cx) {
-                Poll::Ready(_) => match this.slot.take() {
-                    Some(value) => Poll::Ready(Some(value)),
-                    None => Poll::Pending,
-                },
-                Poll::Pending => return Poll::Pending,
-            },
+
+            State::SendingNone => {
+                *this.state = State::Finished;
+                Poll::Ready(None)
+            }
+            State::Finished => panic!("stream polled after completion"),
         }
     }
 }
@@ -93,13 +107,13 @@ mod test {
     #[test]
     fn all_values_debounce() {
         async_io::block_on(async {
-            let bound = Duration::from_millis(10);
-            let debounce_bound = Duration::from_millis(20);
+            let interval = Duration::from_millis(10);
+            let debounce = Duration::from_millis(20);
 
             let mut counter = 0;
-            crate::stream::interval(bound)
+            crate::stream::interval(interval)
                 .take(10)
-                .debounce(debounce_bound)
+                .debounce(debounce)
                 .for_each(|_| counter += 1)
                 .await;
 
@@ -110,13 +124,13 @@ mod test {
     #[test]
     fn no_debounces_hit() {
         async_io::block_on(async {
-            let bound = Duration::from_millis(40);
-            let debounce_bound = Duration::from_millis(10);
+            let interval = Duration::from_millis(40);
+            let debounce = Duration::from_millis(10);
 
             let mut counter = 0;
-            crate::stream::interval(bound)
+            crate::stream::interval(interval)
                 .take(10)
-                .debounce(debounce_bound)
+                .debounce(debounce)
                 .for_each(|_| counter += 1)
                 .await;
 

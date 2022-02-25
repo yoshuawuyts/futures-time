@@ -19,11 +19,12 @@ pub trait StreamExt: Stream {
     }
 
     /// Returns a stream that debounces for the given duration.
-    fn debounce(self, duration: Duration) -> Debounce<Self>
+    fn debounce(self, duration: Duration) -> Debounce<Self, Sleep>
     where
         Self: Sized,
     {
-        Debounce::new(self, duration)
+        let deadline = sleep(duration);
+        Debounce::new(self, deadline)
     }
 
     /// Returns a stream that delays execution for a specified duration.
