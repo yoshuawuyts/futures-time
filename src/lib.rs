@@ -12,6 +12,30 @@
 //! model to make it evaluate lazily, and wraps it in an ergnomic Rust
 //! interface.
 //!
+//! # Examples
+//!
+//! __Throttle a stream__
+//!
+//! ```
+//! use futures_lite::prelude::*;
+//! use futures_time::prelude::*;
+//! use futures_time::time::Duration;
+//! use futures_time::stream;
+//!
+//! fn main() {
+//!     async_io::block_on(async {
+//!         let mut counter = 0;
+//!         stream::interval(Duration::from_millis(100))  // Yield an item every 100ms
+//!             .take(4)                                  // Stop after 4 items
+//!             .throttle(Duration::from_millis(200))     // Only let an item through every 200ms
+//!             .for_each(|_| counter += 1)               // Increment a counter for each item
+//!             .await;
+//!
+//!         assert_eq!(counter, 2);
+//!     })
+//! }
+//! ```
+//!
 //! # Futures
 //!
 //! - [`task::sleep`] Sleeps for the specified amount of time.
