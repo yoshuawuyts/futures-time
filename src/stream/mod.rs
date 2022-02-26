@@ -1,3 +1,5 @@
+//! Composable asynchronous iteration.
+
 mod buffer;
 mod debounce;
 mod delay;

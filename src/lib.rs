@@ -87,6 +87,33 @@
 //! with [`task::sleep_until`], which takes an `Instant`, and cannot be reset
 //! relative to the present time.
 //!
+//! # Cancellation
+//!
+//! You can use [`future::cancel`] to create a [`future::CancelSender`] and [`future::CancelReceiver`] pair.
+//! When the "cancel sender" is dropped, all "cancel
+//! listeners" will halt execution of the future the next time they are
+//! `.await`ed. This will cause the future to stop executing, and all
+//! destructors to be run.
+//!
+//! ```
+//! use futures_time::prelude::*;
+//! use futures_time::future::cancel;
+//! use futures_time::time::Duration;
+//!
+//! fn main() {
+//!     async_io::block_on(async {
+//!         let (send, recv) = cancel(); // create a new send/receive pair
+//!         let mut counter = 0;
+//!         let value = async { "meow" }
+//!             .delay(Duration::from_millis(100))
+//!             .timeout(recv) // time-out if the sender is dropped.
+//!             .await;
+//!
+//!         assert_eq!(value.unwrap(), "meow");
+//!     })
+//! }
+//! ```
+//!
 //! # Futures
 //!
 //! - [`task::sleep`] Sleeps for the specified amount of time.
@@ -112,13 +139,10 @@ pub(crate) mod utils;
 
 pub mod time;
 
-/// `std::stream` extensions.
 pub mod stream;
 
-/// `std::task` extensions.
 pub mod task;
 
-/// `std::future` extensions.
 pub mod future;
 
 /// The `futures-time` prelude.
