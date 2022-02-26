@@ -1,12 +1,12 @@
-use core::future::Future;
-use core::pin::Pin;
-use core::time::Duration;
-
-use pin_project_lite::pin_project;
+use std::future::Future;
+use std::pin::Pin;
+use std::task::{Context, Poll};
 
 use async_io::Timer;
-use core::task::{Context, Poll};
 use futures_core::stream::Stream;
+use pin_project_lite::pin_project;
+
+use crate::time::Duration;
 
 pin_project! {
     /// Delay execution of a stream once for the specified duration.
@@ -31,7 +31,7 @@ impl<S> Delay<S> {
     pub(super) fn new(stream: S, dur: Duration) -> Self {
         Delay {
             stream,
-            timer: Timer::after(dur),
+            timer: Timer::after(dur.into()),
             state: State::Timer,
         }
     }

@@ -1,14 +1,16 @@
+use std::future::Future;
 use std::pin::Pin;
 use std::task::{Context, Poll};
-use std::{future::Future, time::Instant};
 
 use async_io::Timer;
 use pin_project_lite::pin_project;
 
+use crate::time::Instant;
+
 /// Sleeps until the specified instant.
 pub fn sleep_until(deadline: Instant) -> SleepUntil {
     SleepUntil {
-        timer: Timer::at(deadline),
+        timer: Timer::at(deadline.into()),
         completed: false,
     }
 }
@@ -32,7 +34,7 @@ impl Future for SleepUntil {
         match this.timer.poll(cx) {
             Poll::Ready(instant) => {
                 *this.completed = true;
-                Poll::Ready(instant)
+                Poll::Ready(instant.into())
             }
             Poll::Pending => Poll::Pending,
         }

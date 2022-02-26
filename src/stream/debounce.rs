@@ -100,8 +100,8 @@ where
 #[cfg(test)]
 mod test {
     use crate::prelude::*;
+    use crate::time::Duration;
     use futures_lite::prelude::*;
-    use std::time::Duration;
 
     #[test]
     fn all_values_debounce() {

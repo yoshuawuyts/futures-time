@@ -1,9 +1,9 @@
 use core::future::Future;
-use std::time::{Duration, Instant};
 
 use crate::task::{Sleep, SleepUntil};
 
 use super::{Delay, Timeout};
+use crate::time::{Duration, Instant};
 
 /// Extend `Future` with time-based operations.
 pub trait FutureExt: Future {

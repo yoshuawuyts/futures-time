@@ -36,6 +36,8 @@
 
 pub(crate) mod utils;
 
+pub mod time;
+
 /// `std::stream` extensions.
 pub mod stream;
 
@@ -48,5 +50,6 @@ pub mod future;
 /// The `futures-time` prelude.
 pub mod prelude {
     pub use super::future::FutureExt as _;
+    pub use super::future::ResetDeadlineFuture as _;
     pub use super::stream::StreamExt as _;
 }

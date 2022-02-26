@@ -96,8 +96,8 @@ impl<S: Stream, I: Stream> Stream for Buffer<S, I> {
 #[cfg(test)]
 mod test {
     use crate::prelude::*;
+    use crate::time::Duration;
     use futures_lite::prelude::*;
-    use std::time::Duration;
 
     #[test]
     fn buffer_all_values() {

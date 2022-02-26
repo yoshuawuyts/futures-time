@@ -1,4 +1,4 @@
-use std::time::Duration;
+use crate::time::Duration;
 
 use futures_core::Stream;
 

@@ -1,10 +1,11 @@
 use std::future::Future;
 use std::pin::Pin;
 use std::task::{Context, Poll};
-use std::time::{Duration, Instant};
 
 use async_io::Timer;
 use futures_core::stream::Stream;
+
+use crate::time::{Duration, Instant};
 
 /// Creates a new stream that yields at a set interval.
 ///
@@ -20,7 +21,7 @@ use futures_core::stream::Stream;
 /// otherwise indicated to fire at.
 pub fn interval(dur: Duration) -> Interval {
     Interval {
-        timer: Timer::after(dur),
+        timer: Timer::after(dur.into()),
         interval: dur,
     }
 }
@@ -47,7 +48,7 @@ impl Stream for Interval {
             Poll::Pending => return Poll::Pending,
         };
         let interval = self.interval;
-        let _ = std::mem::replace(&mut self.timer, Timer::after(interval));
-        Poll::Ready(Some(instant))
+        let _ = std::mem::replace(&mut self.timer, Timer::after(interval.into()));
+        Poll::Ready(Some(instant.into()))
     }
 }

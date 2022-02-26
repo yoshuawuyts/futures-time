@@ -86,8 +86,8 @@ impl<S: Stream, I: Stream> Stream for Throttle<S, I> {
 #[cfg(test)]
 mod test {
     use crate::prelude::*;
+    use crate::time::Duration;
     use futures_lite::prelude::*;
-    use std::time::Duration;
 
     #[test]
     fn smoke() {
