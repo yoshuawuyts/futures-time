@@ -38,9 +38,9 @@ impl Into<std::time::Instant> for Instant {
 impl IntoFuture for Instant {
     type Output = Instant;
 
-    type Future = SleepUntil;
+    type IntoFuture = SleepUntil;
 
-    fn into_future(self) -> Self::Future {
+    fn into_future(self) -> Self::IntoFuture {
         crate::task::sleep_until(self)
     }
 }
