@@ -1,6 +1,4 @@
-//! Async time operators.
-//!
-//! ## About
+//! # Async time operators.
 //!
 //! This crate provides ergonomic, async time-based operations. It serves as an
 //! experimental playground to experiment with how we could potentially add
@@ -13,6 +11,39 @@
 //! interface.
 //!
 //! # Examples
+//!
+//! __Delay a future's execution by 100ms__
+//!
+//! ```
+//! use futures_time::prelude::*;
+//! use futures_time::time::Duration;
+//!
+//! fn main() {
+//!     async_io::block_on(async {
+//!         let res = async { "meow" }
+//!             .delay(Duration::from_millis(100))
+//!             .await;
+//!         assert_eq!(res, "meow");
+//!     })
+//! }
+//! ```
+//!
+//! __Error if a future takes longer than 200ms__
+//!
+//! ```
+//! use futures_time::prelude::*;
+//! use futures_time::time::Duration;
+//!
+//! fn main() {
+//!     async_io::block_on(async {
+//!         let res = async { "meow" }
+//!             .delay(Duration::from_millis(100))
+//!             .timeout(Duration::from_millis(200))
+//!             .await;
+//!         assert_eq!(res.unwrap(), "meow");
+//!     })
+//! }
+//! ```
 //!
 //! __Throttle a stream__
 //!
@@ -36,6 +67,23 @@
 //! }
 //! ```
 //!
+//! # The `Deadline` trait
+//!
+//! The future returned by [`task::sleep`] implements the [`future::Deadline`]
+//! trait. This represents a future whose deadline can be moved forward into the
+//! future.
+//!
+//! For example, say we have a deadline of `Duration::from_secs(10)`. By calling
+//! `Daedline::push_deadline` the deadline can be moved into the future relative
+//! to now. This functionality is required for methods such as `debounce` and
+//! `Stream::timeout`, which will regularly want to move their deadlines into
+//! the future.
+//!
+//! Currently the only type implementing the `Deadline` trait is
+//! [`task::Sleep`], which is created from a `Duration.` This is in contrast
+//! with [`task::sleep_until`], which takes an `Instant`, and cannot be reset
+//! relative to the present time.
+//!
 //! # Futures
 //!
 //! - [`task::sleep`] Sleeps for the specified amount of time.
@@ -46,7 +94,6 @@
 //! # Streams
 //!
 //! - [`stream::interval`](`stream::interval`) Creates a new stream that yields at a set interval.
-//! - `Stream::audit`
 //! - [`Stream::buffer`](`stream::StreamExt::buffer`) Returns a stream which buffers items and flushes them at each interval.
 //! - [`Stream::debounce`](`stream::StreamExt::debounce`) Returns a stream that debounces for the given duration.
 //! - [`Stream::delay`](`stream::StreamExt::delay`) Delay execution for a specified time.
