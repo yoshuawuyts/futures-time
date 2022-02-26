@@ -47,6 +47,9 @@
 //!
 //! __Throttle a stream__
 //!
+//! This lets two items through in total: one `100ms` after the program has
+//! started, and one `300ms` after the program has started.
+//!
 //! ```
 //! use futures_lite::prelude::*;
 //! use futures_time::prelude::*;
@@ -58,7 +61,7 @@
 //!         let mut counter = 0;
 //!         stream::interval(Duration::from_millis(100))  // Yield an item every 100ms
 //!             .take(4)                                  // Stop after 4 items
-//!             .throttle(Duration::from_millis(200))     // Only let an item through every 200ms
+//!             .throttle(Duration::from_millis(300))     // Only let an item through every 300ms
 //!             .for_each(|_| counter += 1)               // Increment a counter for each item
 //!             .await;
 //!

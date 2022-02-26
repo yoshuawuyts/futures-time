@@ -14,17 +14,17 @@ pin_project! {
         #[pin]
         interval: I,
         state: State,
-        slot: Option<S::Item>,
+        budget: usize,
     }
 }
 
 impl<S: Stream, I> Throttle<S, I> {
     pub(crate) fn new(stream: S, interval: I) -> Self {
         Self {
-            state: State::Streaming,
+            state: State::Streaming(0),
             stream,
             interval,
-            slot: None,
+            budget: 1,
         }
     }
 }
@@ -32,7 +32,7 @@ impl<S: Stream, I> Throttle<S, I> {
 #[derive(Debug)]
 enum State {
     /// The underlying stream is yielding items.
-    Streaming,
+    Streaming(usize),
     /// All timers have completed and all data has been yielded.
     StreamDone,
     /// The closing `Ready(None)` has been yielded.
@@ -45,14 +45,19 @@ impl<S: Stream, I: Stream> Stream for Throttle<S, I> {
     fn poll_next(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
         let mut this = self.project();
 
+        let mut slot = None;
+
         match this.state {
             // The underlying stream is yielding items.
-            State::Streaming => {
+            State::Streaming(count) => {
                 // Poll the underlying stream until we get to `Poll::Pending`.
                 loop {
                     match this.stream.as_mut().poll_next(cx) {
                         Poll::Ready(Some(value)) => {
-                            let _ = this.slot.insert(value);
+                            if count < this.budget {
+                                slot = Some(value);
+                                *count += 1;
+                            }
                         }
                         Poll::Ready(None) => {
                             *this.state = State::StreamDone;
@@ -63,12 +68,19 @@ impl<S: Stream, I: Stream> Stream for Throttle<S, I> {
                 }
 
                 // After the stream, always poll the interval timer.
-                this.interval.as_mut().poll_next(cx).map(move |_| {
-                    if let State::StreamDone = this.state {
-                        cx.waker().wake_by_ref();
-                    }
-                    this.slot.take()
-                })
+                let _ = this
+                    .interval
+                    .as_mut()
+                    .poll_next(cx)
+                    .map(move |_| match this.state {
+                        State::Streaming(count) => *count = 0, // reset the counter
+                        State::StreamDone => cx.waker().wake_by_ref(),
+                        State::AllDone => {}
+                    });
+                match slot {
+                    Some(item) => Poll::Ready(Some(item)),
+                    None => Poll::Pending,
+                }
             }
 
             // All streams have completed and all data has been yielded.
@@ -93,7 +105,7 @@ mod test {
     fn smoke() {
         async_io::block_on(async {
             let interval = Duration::from_millis(100);
-            let throttle = Duration::from_millis(200);
+            let throttle = Duration::from_millis(300);
 
             let take = 4;
             let expected = 2;

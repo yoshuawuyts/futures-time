@@ -5,7 +5,7 @@ use std::pin::Pin;
 use std::task::{Context, Poll};
 
 pin_project! {
-    /// Emit the last item seen on every interval.
+    /// Yield the last value received, if any, at each interval.
     ///
     /// If no value was emitted during the last interval, no value is emitted
     /// and we skip to the next interval.
