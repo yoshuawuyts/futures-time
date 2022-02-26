@@ -25,14 +25,14 @@ pub trait StreamExt: Stream {
         Debounce::new(self, deadline.into_future())
     }
 
-    // /// Returns a stream that delays execution for a specified duration.
-    // fn delay<D>(self, deadline: D) -> Delay<Self, D::IntoFuture>
-    // where
-    //     Self: Sized,
-    //     D: IntoFuture,
-    // {
-    //     Delay::new(self, deadline.into())
-    // }
+    /// Returns a stream that delays execution for a specified duration.
+    fn delay<D>(self, deadline: D) -> Delay<Self, D::IntoFuture>
+    where
+        Self: Sized,
+        D: IntoFuture,
+    {
+        Delay::new(self, deadline.into_future())
+    }
 
     /// Throtlle a stream.
     fn throttle<I>(self, interval: I) -> Throttle<Self, I::IntoStream>

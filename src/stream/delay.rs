@@ -2,21 +2,18 @@ use std::future::Future;
 use std::pin::Pin;
 use std::task::{Context, Poll};
 
-use async_io::Timer;
 use futures_core::stream::Stream;
 use pin_project_lite::pin_project;
-
-use crate::time::Duration;
 
 pin_project! {
     /// Delay execution of a stream once for the specified duration.
     #[derive(Debug)]
     #[must_use = "streams do nothing unless polled or .awaited"]
-    pub struct Delay<S> {
+    pub struct Delay<S, D> {
         #[pin]
         stream: S,
         #[pin]
-        timer: Timer,
+        deadline: D,
         state: State,
     }
 }
@@ -27,19 +24,20 @@ enum State {
     Streaming,
 }
 
-impl<S> Delay<S> {
-    pub(super) fn new(stream: S, dur: Duration) -> Self {
+impl<S, D> Delay<S, D> {
+    pub(super) fn new(stream: S, deadline: D) -> Self {
         Delay {
             stream,
-            timer: Timer::after(dur.into()),
+            deadline,
             state: State::Timer,
         }
     }
 }
 
-impl<S> Stream for Delay<S>
+impl<S, D> Stream for Delay<S, D>
 where
     S: Stream,
+    D: Future,
 {
     type Item = S::Item;
 
@@ -47,7 +45,7 @@ where
         let this = self.project();
 
         match this.state {
-            State::Timer => match this.timer.poll(cx) {
+            State::Timer => match this.deadline.poll(cx) {
                 Poll::Pending => return Poll::Pending,
                 Poll::Ready(_) => {
                     *this.state = State::Streaming;
