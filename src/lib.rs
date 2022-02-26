@@ -73,9 +73,9 @@ pub mod future;
 
 /// The `futures-time` prelude.
 pub mod prelude {
+    pub use super::future::Deadline as _;
     pub use super::future::FutureExt as _;
     pub use super::future::IntoFuture as _;
-    pub use super::future::ResetDeadlineFuture as _;
     pub use super::stream::IntoStream as _;
     pub use super::stream::StreamExt as _;
 }

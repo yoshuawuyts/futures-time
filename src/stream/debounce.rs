@@ -5,7 +5,7 @@ use futures_core::ready;
 use futures_core::stream::Stream;
 use pin_project_lite::pin_project;
 
-use crate::future::ResetDeadlineFuture;
+use crate::future::Deadline;
 
 pin_project! {
     /// Debounce the stream.
@@ -49,7 +49,7 @@ impl<S: Stream, D> Debounce<S, D> {
 impl<S, D> Stream for Debounce<S, D>
 where
     S: Stream,
-    D: ResetDeadlineFuture,
+    D: Deadline,
 {
     type Item = S::Item;
 
@@ -61,7 +61,7 @@ where
             match this.stream.poll_next(cx) {
                 Poll::Ready(Some(item)) => {
                     *this.slot = Some(item);
-                    this.deadline.as_mut().reset_deadline();
+                    this.deadline.as_mut().push_deadline();
                 }
                 Poll::Ready(None) => match *this.slot {
                     Some(_) => *this.state = State::FinalItem,

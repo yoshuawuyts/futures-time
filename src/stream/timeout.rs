@@ -6,7 +6,7 @@ use pin_project_lite::pin_project;
 use core::task::{Context, Poll};
 use futures_core::stream::Stream;
 
-use crate::{future::ResetDeadlineFuture, utils};
+use crate::{future::Deadline, utils};
 
 pin_project! {
     /// A stream with timeout time set
@@ -26,7 +26,7 @@ impl<S, D> Timeout<S, D> {
     }
 }
 
-impl<S: Stream, D: ResetDeadlineFuture> Stream for Timeout<S, D> {
+impl<S: Stream, D: Deadline> Stream for Timeout<S, D> {
     type Item = io::Result<S::Item>;
 
     fn poll_next(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
@@ -41,7 +41,7 @@ impl<S: Stream, D: ResetDeadlineFuture> Stream for Timeout<S, D> {
             },
         };
 
-        this.deadline.as_mut().reset_deadline();
+        this.deadline.as_mut().push_deadline();
 
         r
     }

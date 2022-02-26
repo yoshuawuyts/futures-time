@@ -1,4 +1,4 @@
-use crate::future::{IntoFuture, ResetDeadlineFuture};
+use crate::future::{Deadline, IntoFuture};
 
 use futures_core::Stream;
 
@@ -20,7 +20,7 @@ pub trait StreamExt: Stream {
     where
         Self: Sized,
         D: IntoFuture,
-        D::IntoFuture: ResetDeadlineFuture,
+        D::IntoFuture: Deadline,
     {
         Debounce::new(self, deadline.into_future())
     }
@@ -48,7 +48,7 @@ pub trait StreamExt: Stream {
     where
         Self: Sized,
         D: IntoFuture,
-        D::IntoFuture: ResetDeadlineFuture,
+        D::IntoFuture: Deadline,
     {
         Timeout::new(self, deadline.into_future())
     }
