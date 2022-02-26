@@ -1,28 +1,25 @@
 use core::future::Future;
 
-use crate::task::{Sleep, SleepUntil};
-
-use super::{Delay, Timeout};
-use crate::time::{Duration, Instant};
+use super::{Delay, IntoFuture, Timeout};
 
 /// Extend `Future` with time-based operations.
 pub trait FutureExt: Future {
     /// Await a future or times out after a duration of time.     
-    fn timeout(self, dur: Duration) -> Timeout<Self, Sleep>
+    fn timeout<D>(self, deadline: D) -> Timeout<Self, D::IntoFuture>
     where
         Self: Sized,
+        D: IntoFuture,
     {
-        let deadline = crate::task::sleep(dur);
-        Timeout::new(self, deadline)
+        Timeout::new(self, deadline.into_future())
     }
 
     /// Returns a future that delays execution for a specified time.
-    fn delay<D: Future>(self, deadline: Instant) -> Delay<Self, SleepUntil>
+    fn delay<D>(self, deadline: D) -> Delay<Self, D::IntoFuture>
     where
         Self: Sized,
+        D: IntoFuture,
     {
-        let deadline = crate::task::sleep_until(deadline);
-        Delay::new(self, deadline)
+        Delay::new(self, deadline.into_future())
     }
 }
 

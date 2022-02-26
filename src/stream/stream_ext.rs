@@ -1,55 +1,56 @@
-use crate::time::Duration;
+use crate::future::{IntoFuture, ResetDeadlineFuture};
 
 use futures_core::Stream;
 
-use crate::task::{sleep, Sleep};
-
-use super::{interval, Buffer, Debounce, Delay, Interval, Throttle, Timeout};
+use super::{Buffer, Debounce, Delay, IntoStream, Throttle, Timeout};
 
 /// Extend `Stream` with time-based operations.
 pub trait StreamExt: Stream {
     /// Returns a stream which buffers items and flushes them at each interval.
-    fn buffer(self, duration: Duration) -> Buffer<Self, Interval>
+    fn buffer<I>(self, interval: I) -> Buffer<Self, I::IntoStream>
     where
         Self: Sized,
+        I: IntoStream,
     {
-        let interval = interval(duration);
-        Buffer::new(self, interval)
+        Buffer::new(self, interval.into_stream())
     }
 
     /// Returns a stream that debounces for the given duration.
-    fn debounce(self, duration: Duration) -> Debounce<Self, Sleep>
+    fn debounce<D>(self, deadline: D) -> Debounce<Self, D::IntoFuture>
     where
         Self: Sized,
+        D: IntoFuture,
+        D::IntoFuture: ResetDeadlineFuture,
     {
-        let deadline = sleep(duration);
-        Debounce::new(self, deadline)
+        Debounce::new(self, deadline.into_future())
     }
 
-    /// Returns a stream that delays execution for a specified duration.
-    fn delay(self, duration: Duration) -> Delay<Self>
-    where
-        Self: Sized,
-    {
-        Delay::new(self, duration)
-    }
+    // /// Returns a stream that delays execution for a specified duration.
+    // fn delay<D>(self, deadline: D) -> Delay<Self, D::IntoFuture>
+    // where
+    //     Self: Sized,
+    //     D: IntoFuture,
+    // {
+    //     Delay::new(self, deadline.into())
+    // }
 
     /// Throtlle a stream.
-    fn throttle(self, duration: Duration) -> Throttle<Self, Interval>
+    fn throttle<I>(self, interval: I) -> Throttle<Self, I::IntoStream>
     where
         Self: Sized,
+        I: IntoStream,
     {
-        let interval = interval(duration);
-        Throttle::new(self, interval)
+        Throttle::new(self, interval.into_stream())
     }
 
     /// Await a stream or times out after a duration of time.     
-    fn timeout(self, duration: Duration) -> Timeout<Self, Sleep>
+    fn timeout<D>(self, deadline: D) -> Timeout<Self, D::IntoFuture>
     where
         Self: Sized,
+        D: IntoFuture,
+        D::IntoFuture: ResetDeadlineFuture,
     {
-        let deadline = sleep(duration);
-        Timeout::new(self, deadline)
+        Timeout::new(self, deadline.into_future())
     }
 }
 
