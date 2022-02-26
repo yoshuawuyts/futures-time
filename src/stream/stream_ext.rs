@@ -2,10 +2,19 @@ use crate::future::{Deadline, IntoFuture};
 
 use futures_core::Stream;
 
-use super::{Buffer, Debounce, Delay, IntoStream, Throttle, Timeout};
+use super::{Buffer, Debounce, Delay, IntoStream, Sample, Throttle, Timeout};
 
 /// Extend `Stream` with time-based operations.
 pub trait StreamExt: Stream {
+    /// Yield the last value received, if any, at each interval.
+    fn sample<I>(self, interval: I) -> Sample<Self, I::IntoStream>
+    where
+        Self: Sized,
+        I: IntoStream,
+    {
+        Sample::new(self, interval.into_stream())
+    }
+
     /// Returns a stream which buffers items and flushes them at each interval.
     fn buffer<I>(self, interval: I) -> Buffer<Self, I::IntoStream>
     where
