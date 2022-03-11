@@ -116,20 +116,23 @@
 //!
 //! # Futures
 //!
-//! - [`task::sleep`] Sleeps for the specified amount of time.
-//! - [`task::sleep_until`] Sleeps until the specified deadline.
 //! - [`Future::delay`](`future::FutureExt::delay`) Delay execution for a specified time.
 //! - [`Future::timeout`](`future::FutureExt::timeout`) Cancel the future if the execution takes longer than the specified time.
 //!
+//! # Tasks
+//!
+//! - [`task::sleep_until`] Sleeps until the specified deadline.
+//! - [`task::sleep`] Sleeps for the specified amount of time.
+//!
 //! # Streams
 //!
-//! - [`stream::interval`](`stream::interval`) Creates a new stream that yields at a set interval.
 //! - [`Stream::buffer`](`stream::StreamExt::buffer`) Returns a stream which buffers items and flushes them at each interval.
 //! - [`Stream::debounce`](`stream::StreamExt::debounce`) Returns a stream that debounces for the given duration.
 //! - [`Stream::delay`](`stream::StreamExt::delay`) Delay execution for a specified time.
 //! - [`Stream::sample`](`stream::StreamExt::sample`) Yield the last value received, if any, at each interval.
 //! - [`Stream::throttle`](`stream::StreamExt::throttle`) Filter out all items after the first for a specified time.
 //! - [`Stream::timeout`](`stream::StreamExt::timeout`) Cancel the stream if the execution takes longer than the specified time.
+//! - [`stream::interval`](`stream::interval`) Creates a new stream that yields at a set interval.
 
 #![forbid(unsafe_code)]
 #![deny(missing_debug_implementations)]
