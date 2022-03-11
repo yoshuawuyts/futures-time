@@ -1,29 +1,36 @@
+use futures_core::ready;
 use std::future::Future;
 use std::pin::Pin;
+use std::task::{Context, Poll};
 
 use pin_project_lite::pin_project;
 
-use core::task::{Context, Poll};
-
 pin_project! {
-    /// A future that delays execution by the specified time.
+    /// Suspends a future until the specified deadline.
     #[must_use = "futures do nothing unless polled or .awaited"]
-    #[derive(Debug)]
     pub struct Delay<F, D> {
         #[pin]
         future: F,
         #[pin]
         deadline: D,
-        completed: bool,
+        state: State,
     }
 }
 
+/// The internal state
+#[derive(Debug)]
+enum State {
+    Started,
+    PollFuture,
+    Completed,
+}
+
 impl<F, D> Delay<F, D> {
-    pub(crate) fn new(future: F, deadline: D) -> Self {
+    pub(super) fn new(future: F, deadline: D) -> Self {
         Self {
             future,
             deadline,
-            completed: false,
+            state: State::Started,
         }
     }
 }
@@ -32,19 +39,20 @@ impl<F: Future, D: Future> Future for Delay<F, D> {
     type Output = F::Output;
 
     fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
-        assert!(!self.completed, "Future polled after completing");
-
-        let this = self.project();
-
-        match this.deadline.poll(cx) {
-            Poll::Pending => Poll::Pending,
-            Poll::Ready(_) => match this.future.poll(cx) {
-                Poll::Ready(v) => {
-                    *this.completed = true;
-                    Poll::Ready(v)
+        let mut this = self.project();
+        loop {
+            match this.state {
+                State::Started => {
+                    ready!(this.deadline.as_mut().poll(cx));
+                    *this.state = State::PollFuture;
                 }
-                Poll::Pending => Poll::Pending,
-            },
+                State::PollFuture => {
+                    let value = ready!(this.future.as_mut().poll(cx));
+                    *this.state = State::Completed;
+                    return Poll::Ready(value);
+                }
+                State::Completed => panic!("future polled after completing"),
+            }
         }
     }
 }
