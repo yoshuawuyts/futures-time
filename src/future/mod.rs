@@ -8,12 +8,13 @@
 //! like with `?` we have to be careful to roll back local state if our future
 //! halts there.
 //!
-//! In order to perform a cancellation remotely, you can use the [`signal`]
-//! function to create a signal sender/receiver pair. When the sender side of
-//! this pair is dropped, all receivers resolve. This can be passed to
-//! [`Future::timeout`] or [`Stream::timeout`] to perform a cancellation.
+//! In order to perform a cancellation remotely, you can use the [`channel::bounded`]
+//! function to create a sender/receiver pair. When the sender side of
+//! this pair emits a message, all receivers are trigered. Receivers can be passed to
+//! [`Future::timeout`] or [`Stream::timeout`] to perform a cancellation when
+//! the message is received.
 //!
-//! [`signal`]: crate::future::signal
+//! [`channel::bounded`]: crate::channel::bounded
 //! [`Future::timeout`]: crate::future::FutureExt::timeout
 //! [`Stream::timeout`]: crate::stream::StreamExt::timeout
 //!
@@ -42,7 +43,6 @@ mod future_ext;
 mod into_future;
 mod parker;
 mod relative_future;
-mod signal;
 mod timeout;
 
 pub use delay::Delay;
@@ -50,5 +50,4 @@ pub use future_ext::FutureExt;
 pub use into_future::IntoFuture;
 pub use parker::{parker, Park, Parker, Unpark, Unparker};
 pub use relative_future::Deadline;
-pub use signal::{signal, SignalReceiver, SignalSender};
 pub use timeout::Timeout;

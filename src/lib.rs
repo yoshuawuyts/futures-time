@@ -89,24 +89,23 @@
 //!
 //! # Cancellation
 //!
-//! You can use [`future::signal`] to create a [`future::SignalSender`] and [`future::SignalReceiver`] pair.
-//! When the "cancel sender" is dropped, all "cancel
-//! listeners" will halt execution of the future the next time they are
+//! You can use [`channel::bounded`] to create a [`channel::Sender`] and [`channel::Receiver`] pair.
+//! When the "sender" sends a message, all "receivers" will halt execution of the future the next time they are
 //! `.await`ed. This will cause the future to stop executing, and all
 //! destructors to be run.
 //!
 //! ```
 //! use futures_time::prelude::*;
-//! use futures_time::future::cancel;
+//! use futures_time::channel;
 //! use futures_time::time::Duration;
 //!
 //! fn main() {
 //!     async_io::block_on(async {
-//!         let (send, recv) = cancel(); // create a new send/receive pair
+//!         let (send, recv) = channel::bounded(1); // create a new send/receive pair
 //!         let mut counter = 0;
 //!         let value = async { "meow" }
 //!             .delay(Duration::from_millis(100))
-//!             .timeout(recv) // time-out if the sender is dropped.
+//!             .timeout(recv) // time-out when the sender emits a message
 //!             .await;
 //!
 //!         assert_eq!(value.unwrap(), "meow");
@@ -134,6 +133,12 @@
 //! - [`Stream::throttle`](`stream::StreamExt::throttle`) Filter out all items after the first for a specified time.
 //! - [`Stream::timeout`](`stream::StreamExt::timeout`) Cancel the stream if the execution takes longer than the specified time.
 //! - [`stream::interval`](`stream::interval`) Creates a new stream that yields at a set interval.
+//!
+//! # Re-exports
+//!
+//! - `channel` is a re-export of the [`async-channel`] crate, exposed for convenience
+//!
+//! [`async-channel`]: https://docs.rs/async-channel/latest/async_channel
 
 #![forbid(unsafe_code)]
 #![deny(missing_debug_implementations)]
@@ -148,6 +153,9 @@ pub mod stream;
 pub mod task;
 
 pub mod future;
+
+#[doc(inline)]
+pub use async_channel as channel;
 
 /// The `futures-time` prelude.
 pub mod prelude {
