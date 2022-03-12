@@ -123,6 +123,7 @@
 //!
 //! - [`task::sleep_until`] Sleeps until the specified deadline.
 //! - [`task::sleep`] Sleeps for the specified amount of time.
+//! - [`task::parker`] Suspend a future for a specified amount of time.
 //!
 //! # Streams
 //!
