@@ -89,7 +89,7 @@
 //!
 //! # Cancellation
 //!
-//! You can use [`future::cancel`] to create a [`future::CancelSender`] and [`future::CancelReceiver`] pair.
+//! You can use [`future::signal`] to create a [`future::SignalSender`] and [`future::SignalReceiver`] pair.
 //! When the "cancel sender" is dropped, all "cancel
 //! listeners" will halt execution of the future the next time they are
 //! `.await`ed. This will cause the future to stop executing, and all
