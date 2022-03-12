@@ -118,12 +118,12 @@
 //!
 //! - [`Future::delay`](`future::FutureExt::delay`) Delay execution for a specified time.
 //! - [`Future::timeout`](`future::FutureExt::timeout`) Cancel the future if the execution takes longer than the specified time.
+//! - [`future::parker`] Suspend a future for a specified amount of time.
 //!
 //! # Tasks
 //!
 //! - [`task::sleep_until`] Sleeps until the specified deadline.
 //! - [`task::sleep`] Sleeps for the specified amount of time.
-//! - [`task::parker`] Suspend a future for a specified amount of time.
 //!
 //! # Streams
 //!
