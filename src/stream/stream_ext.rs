@@ -35,6 +35,24 @@ pub trait StreamExt: Stream {
     }
 
     /// Returns a stream that delays execution for a specified duration.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use futures_lite::prelude::*;
+    /// use futures_time::prelude::*;
+    /// use futures_time::time::{Instant, Duration};
+    /// use futures_lite::stream;
+    ///
+    /// fn main() {
+    ///     async_io::block_on(async {
+    ///         let now = Instant::now();
+    ///         let delay = Duration::from_millis(100);
+    ///         let _ = stream::once("meow").delay(delay).next().await;
+    ///         assert!(now.elapsed() >= *delay);
+    ///     });
+    /// }
+    /// ```
     fn delay<D>(self, deadline: D) -> Delay<Self, D::IntoFuture>
     where
         Self: Sized,
@@ -53,6 +71,34 @@ pub trait StreamExt: Stream {
     }
 
     /// Await a stream or times out after a duration of time.     
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use futures_lite::prelude::*;
+    /// use futures_time::prelude::*;
+    /// use futures_time::time::{Instant, Duration};
+    /// use futures_lite::stream;
+    /// use std::io;
+    ///
+    /// fn main() {
+    ///     async_io::block_on(async {
+    ///         let res = stream::once("meow")
+    ///             .delay(Duration::from_millis(100))  // longer delay
+    ///             .timeout(Duration::from_millis(50)) // shorter timeout
+    ///             .next()
+    ///             .await;
+    ///         assert_eq!(res.unwrap().unwrap_err().kind(), io::ErrorKind::TimedOut); // error
+    ///
+    ///         let res = stream::once("meow")
+    ///             .delay(Duration::from_millis(50))    // shorter delay
+    ///             .timeout(Duration::from_millis(100)) // longer timeout
+    ///             .next()
+    ///             .await;
+    ///         assert_eq!(res.unwrap().unwrap(), "meow"); // success
+    ///     });
+    /// }
+    /// ```
     fn timeout<D>(self, deadline: D) -> Timeout<Self, D::IntoFuture>
     where
         Self: Sized,
