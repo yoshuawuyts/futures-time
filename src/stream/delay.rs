@@ -7,6 +7,12 @@ use pin_project_lite::pin_project;
 
 pin_project! {
     /// Delay execution of a stream once for the specified duration.
+    ///
+    /// This `struct` is created by the [`delay`] method on [`StreamExt`]. See its
+    /// documentation for more.
+    ///
+    /// [`delay`]: crate::stream::StreamExt::delay
+    /// [`StreamExt`]: crate::stream::StreamExt
     #[derive(Debug)]
     #[must_use = "streams do nothing unless polled or .awaited"]
     pub struct Delay<S, D> {

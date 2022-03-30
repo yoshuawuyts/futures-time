@@ -20,17 +20,18 @@
 //!
 //!
 //! ```
+//! use futures_lite::prelude::*;
 //! use futures_time::prelude::*;
-//! use futures_time::future::cancel;
+//! use futures_time::channel;
 //! use futures_time::time::Duration;
 //!
 //! fn main() {
 //!     async_io::block_on(async {
-//!         let (send, recv) = cancel(); // create a new send/receive pair
+//!         let (send, mut recv) = channel::bounded::<()>(1); // create a new send/receive pair
 //!         let mut counter = 0;
 //!         let value = async { "meow" }
 //!             .delay(Duration::from_millis(100))
-//!             .timeout(recv) // time-out if the sender is dropped.
+//!             .timeout(recv.next()) // time-out if the sender is dropped.
 //!             .await;
 //!
 //!         assert_eq!(value.unwrap(), "meow");

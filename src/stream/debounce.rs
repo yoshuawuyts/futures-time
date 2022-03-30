@@ -9,6 +9,12 @@ use crate::future::Deadline;
 
 pin_project! {
     /// Debounce the stream.
+    ///
+    /// This `struct` is created by the [`debounce`] method on [`StreamExt`]. See its
+    /// documentation for more.
+    ///
+    /// [`debounce`]: crate::stream::StreamExt::debounce
+    /// [`StreamExt`]: crate::stream::StreamExt
     #[derive(Debug)]
     #[must_use = "streams do nothing unless polled or .awaited"]
     pub struct Debounce<S: Stream, D> {

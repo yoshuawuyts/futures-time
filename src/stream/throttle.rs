@@ -6,6 +6,12 @@ use std::task::{Context, Poll};
 
 pin_project! {
     /// Filter out all items after the first for a specified time.
+    ///
+    /// This `struct` is created by the [`throttle`] method on [`StreamExt`]. See its
+    /// documentation for more.
+    ///
+    /// [`throttle`]: crate::stream::StreamExt::throttle
+    /// [`StreamExt`]: crate::stream::StreamExt
     #[derive(Debug)]
     #[must_use = "streams do nothing unless polled or .awaited"]
     pub struct Throttle<S: Stream, I> {

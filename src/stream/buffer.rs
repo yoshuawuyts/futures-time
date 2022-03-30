@@ -8,6 +8,12 @@ use futures_core::stream::Stream;
 
 pin_project! {
     /// Buffer items and flushes them at each interval.
+    ///
+    /// This `struct` is created by the [`buffer`] method on [`StreamExt`]. See its
+    /// documentation for more.
+    ///
+    /// [`buffer`]: crate::stream::StreamExt::buffer
+    /// [`StreamExt`]: crate::stream::StreamExt
     #[derive(Debug)]
     #[must_use = "streams do nothing unless polled or .awaited"]
     pub struct Buffer<S: Stream, I> {

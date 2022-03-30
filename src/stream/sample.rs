@@ -9,6 +9,12 @@ pin_project! {
     ///
     /// If no value was emitted during the last interval, no value is emitted
     /// and we skip to the next interval.
+    ///
+    /// This `struct` is created by the [`sample`] method on [`StreamExt`]. See its
+    /// documentation for more.
+    ///
+    /// [`sample`]: crate::stream::StreamExt::sample
+    /// [`StreamExt`]: crate::stream::StreamExt
     #[derive(Debug)]
     #[must_use = "streams do nothing unless polled or .awaited"]
     pub struct Sample<S: Stream, I> {

@@ -95,17 +95,18 @@
 //! destructors to be run.
 //!
 //! ```
+//! use futures_lite::prelude::*;
 //! use futures_time::prelude::*;
 //! use futures_time::channel;
 //! use futures_time::time::Duration;
 //!
 //! fn main() {
 //!     async_io::block_on(async {
-//!         let (send, recv) = channel::bounded(1); // create a new send/receive pair
+//!         let (send, mut recv) = channel::bounded::<()>(1); // create a new send/receive pair
 //!         let mut counter = 0;
 //!         let value = async { "meow" }
 //!             .delay(Duration::from_millis(100))
-//!             .timeout(recv) // time-out when the sender emits a message
+//!             .timeout(recv.next()) // time-out when the sender emits a message
 //!             .await;
 //!
 //!         assert_eq!(value.unwrap(), "meow");
@@ -143,16 +144,14 @@
 #![forbid(unsafe_code)]
 #![deny(missing_debug_implementations)]
 #![warn(missing_docs, future_incompatible, unreachable_pub)]
+#![forbid(rustdoc::missing_doc_code_examples)]
 
 pub(crate) mod utils;
 
-pub mod time;
-
-pub mod stream;
-
-pub mod task;
-
 pub mod future;
+pub mod stream;
+pub mod task;
+pub mod time;
 
 #[doc(inline)]
 pub use async_channel as channel;

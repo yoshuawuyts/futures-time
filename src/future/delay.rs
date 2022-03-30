@@ -7,6 +7,12 @@ use pin_project_lite::pin_project;
 
 pin_project! {
     /// Suspends a future until the specified deadline.
+    ///
+    /// This `struct` is created by the [`delay`] method on [`FutureExt`]. See its
+    /// documentation for more.
+    ///
+    /// [`delay`]: crate::future::FutureExt::delay
+    /// [`FutureExt`]: crate::future::futureExt
     #[must_use = "futures do nothing unless polled or .awaited"]
     pub struct Delay<F, D> {
         #[pin]

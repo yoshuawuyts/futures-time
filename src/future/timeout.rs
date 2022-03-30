@@ -9,6 +9,12 @@ use pin_project_lite::pin_project;
 
 pin_project! {
     /// A future that times out after a duration of time.
+    ///
+    /// This `struct` is created by the [`timeout`] method on [`FutureExt`]. See its
+    /// documentation for more.
+    ///
+    /// [`timeout`]: crate::future::FutureExt::timeout
+    /// [`FutureExt`]: crate::future::futureExt
     #[must_use = "futures do nothing unless polled or .awaited"]
     pub struct Timeout<F, D> {
         #[pin]

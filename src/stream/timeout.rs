@@ -10,6 +10,12 @@ use crate::{future::Deadline, utils};
 
 pin_project! {
     /// A stream with timeout time set
+    ///
+    /// This `struct` is created by the [`timeout`] method on [`StreamExt`]. See its
+    /// documentation for more.
+    ///
+    /// [`timeout`]: crate::stream::StreamExt::timeout
+    /// [`StreamExt`]: crate::stream::StreamExt
     #[derive(Debug)]
     #[must_use = "streams do nothing unless polled or .awaited"]
     pub struct Timeout<S, D> {
