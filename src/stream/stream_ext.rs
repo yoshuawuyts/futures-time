@@ -61,7 +61,29 @@ pub trait StreamExt: Stream {
         Delay::new(self, deadline.into_future())
     }
 
-    /// Throtlle a stream.
+    /// Throttle a stream, discarding items between intervals.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use futures_lite::prelude::*;
+    /// use futures_time::prelude::*;
+    /// use futures_time::time::Duration;
+    /// use futures_time::stream;
+    ///
+    /// fn main() {
+    ///     async_io::block_on(async {
+    ///         let mut counter = 0;
+    ///         stream::interval(Duration::from_millis(100))  // Yield an item every 100ms
+    ///             .take(4)                                  // Stop after 4 items
+    ///             .throttle(Duration::from_millis(300))     // Only let an item through every 300ms
+    ///             .for_each(|_| counter += 1)               // Increment a counter for each item
+    ///             .await;
+    ///
+    ///         assert_eq!(counter, 2);
+    ///     })
+    /// }
+    /// ```
     fn throttle<I>(self, interval: I) -> Throttle<Self, I::IntoStream>
     where
         Self: Sized,
