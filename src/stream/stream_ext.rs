@@ -7,6 +7,34 @@ use super::{Buffer, Debounce, Delay, IntoStream, Sample, Throttle, Timeout};
 /// Extend `Stream` with time-based operations.
 pub trait StreamExt: Stream {
     /// Yield the last value received, if any, at each interval.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use futures_lite::prelude::*;
+    /// use futures_time::prelude::*;
+    /// use futures_time::time::{Instant, Duration};
+    /// use futures_time::stream;
+    ///
+    /// fn main() {
+    ///    async_io::block_on(async {
+    ///        let interval = Duration::from_millis(100);
+    ///        let throttle = Duration::from_millis(200);
+    ///
+    ///        let take = 4;
+    ///        let expected = 2;
+    ///
+    ///        let mut counter = 0;
+    ///        stream::interval(interval)
+    ///            .take(take)
+    ///            .sample(throttle)
+    ///            .for_each(|_| counter += 1)
+    ///            .await;
+    ///
+    ///        assert_eq!(counter, expected);
+    ///    })
+    /// }
+    /// ```
     fn sample<I>(self, interval: I) -> Sample<Self, I::IntoStream>
     where
         Self: Sized,
@@ -16,6 +44,31 @@ pub trait StreamExt: Stream {
     }
 
     /// Returns a stream which buffers items and flushes them at each interval.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use futures_lite::prelude::*;
+    /// use futures_time::prelude::*;
+    /// use futures_time::time::{Instant, Duration};
+    /// use futures_time::stream;
+    ///
+    /// fn main() {
+    ///     async_io::block_on(async {
+    ///         let interval = Duration::from_millis(5);
+    ///         let buffer = Duration::from_millis(20);
+    ///
+    ///         let mut counter = 0;
+    ///         stream::interval(interval)
+    ///             .take(10)
+    ///             .buffer(buffer)
+    ///             .for_each(|buf| counter += buf.len())
+    ///             .await;
+    ///
+    ///         assert_eq!(counter, 10);
+    ///     })
+    /// }
+    /// ```
     fn buffer<I>(self, interval: I) -> Buffer<Self, I::IntoStream>
     where
         Self: Sized,
@@ -25,6 +78,31 @@ pub trait StreamExt: Stream {
     }
 
     /// Returns a stream that debounces for the given duration.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use futures_lite::prelude::*;
+    /// use futures_time::prelude::*;
+    /// use futures_time::time::{Instant, Duration};
+    /// use futures_time::stream;
+    ///
+    /// fn main() {
+    ///     async_io::block_on(async {
+    ///         let interval = Duration::from_millis(10);
+    ///         let debounce = Duration::from_millis(20);
+    ///
+    ///         let mut counter = 0;
+    ///         stream::interval(interval)
+    ///             .take(10)
+    ///             .debounce(debounce)
+    ///             .for_each(|_| counter += 1)
+    ///             .await;
+    ///
+    ///         assert_eq!(counter, 1);
+    ///     })
+    /// }
+    /// ```
     fn debounce<D>(self, deadline: D) -> Debounce<Self, D::IntoFuture>
     where
         Self: Sized,
