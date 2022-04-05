@@ -13,10 +13,9 @@ pub trait StreamExt: Stream {
     /// stream as a source. This enables throttling based on alternative event
     /// sources, such as variable-rate timers.
     ///
-    /// This is the logical inverse of [`throttle`], which yields the _first_ item
-    /// received during each interval.
+    /// See also [`throttle()`].
     ///
-    /// [`throttle`]: StreamExt::throttle
+    /// [`throttle()`]: StreamExt::throttle
     ///
     /// # Data Loss
     ///
@@ -38,20 +37,14 @@ pub trait StreamExt: Stream {
     ///
     /// fn main() {
     ///    async_io::block_on(async {
-    ///        let interval = Duration::from_millis(100);
-    ///        let throttle = Duration::from_millis(200);
-    ///
-    ///        let take = 4;
-    ///        let expected = 2;
-    ///
     ///        let mut counter = 0;
-    ///        stream::interval(interval)
-    ///            .take(take)
-    ///            .sample(throttle)
+    ///        stream::interval(Duration::from_millis(100))
+    ///            .take(4)
+    ///            .sample(Duration::from_millis(200))
     ///            .for_each(|_| counter += 1)
     ///            .await;
     ///
-    ///        assert_eq!(counter, expected);
+    ///        assert_eq!(counter, 2);
     ///    })
     /// }
     /// ```
@@ -75,13 +68,10 @@ pub trait StreamExt: Stream {
     ///
     /// fn main() {
     ///     async_io::block_on(async {
-    ///         let interval = Duration::from_millis(5);
-    ///         let buffer = Duration::from_millis(20);
-    ///
     ///         let mut counter = 0;
-    ///         stream::interval(interval)
+    ///         stream::interval(Duration::from_millis(5))
     ///             .take(10)
-    ///             .buffer(buffer)
+    ///             .buffer(Duration::from_millis(20))
     ///             .for_each(|buf| counter += buf.len())
     ///             .await;
     ///
@@ -109,13 +99,10 @@ pub trait StreamExt: Stream {
     ///
     /// fn main() {
     ///     async_io::block_on(async {
-    ///         let interval = Duration::from_millis(10);
-    ///         let debounce = Duration::from_millis(20);
-    ///
     ///         let mut counter = 0;
-    ///         stream::interval(interval)
+    ///         stream::interval(Duration::from_millis(10))
     ///             .take(10)
-    ///             .debounce(debounce)
+    ///             .debounce(Duration::from_millis(20))
     ///             .for_each(|_| counter += 1)
     ///             .await;
     ///
@@ -161,14 +148,13 @@ pub trait StreamExt: Stream {
 
     /// Yield an item, then ignore subsequent items for a duration.
     ///
-    /// This is the logical inverse of [`sample`], which yields the _last_ item
-    /// received during each interval.
-    ///
     /// In addition to using a time-based interval, this method can take any
     /// stream as a source. This enables throttling based on alternative event
     /// sources, such as variable-rate timers.
     ///
-    /// [`sample`]: `StreamExt::sample`
+    /// See also [`sample()`].
+    ///
+    /// [`sample()`]: `StreamExt::sample`
     ///
     /// # Data Loss
     ///
