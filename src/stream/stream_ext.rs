@@ -139,7 +139,28 @@ pub trait StreamExt: Stream {
         Delay::new(self, deadline.into_future())
     }
 
-    /// Throttle a stream, discarding items between intervals.
+    /// Yield an item, then ignore subsequent items for a duration.
+    ///
+    /// This method is similar to [`debounce`]. The difference is
+    /// that this method yields the _first_ item and then ignores items. While
+    /// [`debounce`] waits for the stream to stop emitting items, and then yields
+    /// the _last_ item.
+    ///
+    /// In addition to using a time-based interval, this method can take any
+    /// stream as a source. This enables throttling based on alternative event
+    /// sources, such as variable-rate timers.
+    ///
+    /// [`debounce`]: `StreamExt::debounce`
+    ///
+    /// # Data Loss
+    ///
+    /// This method will discard data between intervals. Though the
+    /// discarded items will have their destuctors run, __using this method
+    /// incorrectly may lead to unintended data loss__. This method is best used
+    /// to reduce the number of _duplicate_ items after the first has been
+    /// received, such as repeated mouse clicks or key presses. This method may
+    /// lead to unintended data loss when used to discard _unique_ items, such
+    /// as network request.
     ///
     /// # Examples
     ///
@@ -170,7 +191,16 @@ pub trait StreamExt: Stream {
         Throttle::new(self, interval.into_stream())
     }
 
-    /// Await a stream or times out after a duration of time.     
+    /// Return an error if a stream does not yield an item within a given time
+    /// span.
+    ///
+    /// Typically timeouts are, as the name implies, based on _time_. However
+    /// this method can time out based on any future. This can be useful in
+    /// combination with channels, as it allows (long-lived) streams to be
+    /// cancelled based on some external event.
+    ///
+    /// When a timeout is returned, the stream will be dropped and destructors
+    /// will be run.
     ///
     /// # Example
     ///

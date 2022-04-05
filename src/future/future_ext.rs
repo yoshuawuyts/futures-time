@@ -4,7 +4,15 @@ use super::{Delay, IntoFuture, Timeout};
 
 /// Extend `Future` with time-based operations.
 pub trait FutureExt: Future {
-    /// Await a future or times out after a duration of time.     
+    /// Return an error if a future does not complete within a given time span.
+    ///
+    /// Typically timeouts are, as the name implies, based on _time_. However
+    /// this method can time out based on any future. This can be useful in
+    /// combination with channels, as it allows (long-lived) futures to be
+    /// cancelled based on some external event.
+    ///
+    /// When a timeout is returned, the future will be dropped and destructors
+    /// will be run.
     ///
     /// # Example
     ///
