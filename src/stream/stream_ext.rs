@@ -6,7 +6,27 @@ use super::{Buffer, Debounce, Delay, IntoStream, Sample, Throttle, Timeout};
 
 /// Extend `Stream` with time-based operations.
 pub trait StreamExt: Stream {
-    /// Yield the last value received, if any, at each interval.
+    /// Yield the last item received at the end of each interval.
+    ///
+    /// If no items have been received during an interval, the stream will not
+    /// yield any items. In addition to using a time-based interval, this method can take any
+    /// stream as a source. This enables throttling based on alternative event
+    /// sources, such as variable-rate timers.
+    ///
+    /// This is the logical inverse of [`throttle`], which yields the _first_ item
+    /// received during each interval.
+    ///
+    /// [`throttle`]: StreamExt::throttle
+    ///
+    /// # Data Loss
+    ///
+    /// This method will discard data between intervals. Though the
+    /// discarded items will have their destuctors run, __using this method
+    /// incorrectly may lead to unintended data loss__. This method is best used
+    /// to reduce the number of _duplicate_ items after the first has been
+    /// received, such as repeated mouse clicks or key presses. This method may
+    /// lead to unintended data loss when used to discard _unique_ items, such
+    /// as network request.
     ///
     /// # Example
     ///
@@ -141,16 +161,14 @@ pub trait StreamExt: Stream {
 
     /// Yield an item, then ignore subsequent items for a duration.
     ///
-    /// This method is similar to [`debounce`]. The difference is
-    /// that this method yields the _first_ item and then ignores items. While
-    /// [`debounce`] waits for the stream to stop emitting items, and then yields
-    /// the _last_ item.
+    /// This is the logical inverse of [`sample`], which yields the _last_ item
+    /// received during each interval.
     ///
     /// In addition to using a time-based interval, this method can take any
     /// stream as a source. This enables throttling based on alternative event
     /// sources, such as variable-rate timers.
     ///
-    /// [`debounce`]: `StreamExt::debounce`
+    /// [`sample`]: `StreamExt::sample`
     ///
     /// # Data Loss
     ///
