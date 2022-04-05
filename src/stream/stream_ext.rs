@@ -13,9 +13,10 @@ pub trait StreamExt: Stream {
     /// stream as a source. This enables throttling based on alternative event
     /// sources, such as variable-rate timers.
     ///
-    /// See also [`throttle()`].
+    /// See also [`throttle()`] and [`debounce()`].
     ///
     /// [`throttle()`]: StreamExt::throttle
+    /// [`debounce()`]: `StreamExt::debounce`
     ///
     /// # Data Loss
     ///
@@ -87,7 +88,22 @@ pub trait StreamExt: Stream {
         Buffer::new(self, interval.into_stream())
     }
 
-    /// Returns a stream that debounces for the given duration.
+    /// Yield the last item received at the end of a window which resets with
+    /// each item received.
+    ///
+    /// Every time an item is yielded by the underlying stream, the window is
+    /// reset. Once the window expires, the last item seen will be yielded. This
+    /// means that in order to yield an item, no items must be received for the
+    /// entire window, or else the window will reset.
+    ///
+    /// This method is useful to perform actions at the end of bursts of events,
+    /// where performing that same action on _every_ event might not be
+    /// economical.
+    ///
+    /// See also [`sample()`] and [`throttle()`].
+    ///
+    /// [`sample()`]: `StreamExt::sample`
+    /// [`throttle()`]: `StreamExt::throttle`
     ///
     /// # Example
     ///
@@ -102,24 +118,29 @@ pub trait StreamExt: Stream {
     ///         let mut counter = 0;
     ///         stream::interval(Duration::from_millis(10))
     ///             .take(10)
-    ///             .debounce(Duration::from_millis(20))
+    ///             .debounce(Duration::from_millis(20)) // the window is greater than the interval
     ///             .for_each(|_| counter += 1)
     ///             .await;
     ///
-    ///         assert_eq!(counter, 1);
+    ///         assert_eq!(counter, 1); // so only the last item is received
     ///     })
     /// }
     /// ```
-    fn debounce<D>(self, deadline: D) -> Debounce<Self, D::IntoFuture>
+    fn debounce<D>(self, window: D) -> Debounce<Self, D::IntoFuture>
     where
         Self: Sized,
         D: IntoFuture,
         D::IntoFuture: Deadline,
     {
-        Debounce::new(self, deadline.into_future())
+        Debounce::new(self, window.into_future())
     }
 
-    /// Returns a stream that delays execution for a specified duration.
+    /// Delay the yielding of items from the stream until the given deadline.
+    ///
+    /// The stream will not be polled until the deadline has expired. In addition
+    /// to using a time source as a deadline, any future can be used as a
+    /// deadline too. When used in combination with a multi-consumer channel,
+    /// this method can be used to synchronize the start of multiple futures.
     ///
     /// # Example
     ///
@@ -152,9 +173,10 @@ pub trait StreamExt: Stream {
     /// stream as a source. This enables throttling based on alternative event
     /// sources, such as variable-rate timers.
     ///
-    /// See also [`sample()`].
+    /// See also [`sample()`] and [`debounce()`].
     ///
     /// [`sample()`]: `StreamExt::sample`
+    /// [`debounce()`]: `StreamExt::debounce`
     ///
     /// # Data Loss
     ///
