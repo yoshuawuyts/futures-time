@@ -50,5 +50,5 @@ pub use delay::Delay;
 pub use future_ext::FutureExt;
 pub use into_future::IntoFuture;
 pub use parker::{parker, Park, Parker, Unpark, Unparker};
-pub use relative_future::Deadline;
+pub use relative_future::Timer;
 pub use timeout::Timeout;
