@@ -45,10 +45,12 @@ pub trait FutureExt: Future {
         Timeout::new(self, deadline.into_future())
     }
 
-    /// Returns a future that delays execution for a specified time.
+    /// Delay resolving the future until the given deadline.
     ///
-    /// Alternatively an arbitrary future can be passed in as well, allowing
-    /// `delay` to wait for an event to triger.
+    /// The underlying future will not be polled until the deadline has expired. In addition
+    /// to using a time source as a deadline, any future can be used as a
+    /// deadline too. When used in combination with a multi-consumer channel,
+    /// this method can be used to synchronize the start of multiple futures and streams.
     ///
     /// # Example
     ///

@@ -57,7 +57,17 @@ pub trait StreamExt: Stream {
         Sample::new(self, interval.into_stream())
     }
 
-    /// Returns a stream which buffers items and flushes them at each interval.
+    /// Group items into vectors which are yielded at every interval.
+    ///
+    /// In addition to using a time source as a deadline, any stream can be used as a
+    /// deadline too. This enables more interesting buffer strategies to be
+    /// built on top of this primitive.
+    ///
+    /// # Future Improvements
+    ///
+    /// - Lending iterators would allow for internal reusing of the buffer.
+    /// Though different from `Iterator::windows`, it could be more efficient.
+    /// - Contexts/capabilities would enable custom allocators to be used.
     ///
     /// # Example
     ///
@@ -137,10 +147,10 @@ pub trait StreamExt: Stream {
 
     /// Delay the yielding of items from the stream until the given deadline.
     ///
-    /// The stream will not be polled until the deadline has expired. In addition
+    /// The underlying stream will not be polled until the deadline has expired. In addition
     /// to using a time source as a deadline, any future can be used as a
     /// deadline too. When used in combination with a multi-consumer channel,
-    /// this method can be used to synchronize the start of multiple futures.
+    /// this method can be used to synchronize the start of multiple streams and futures.
     ///
     /// # Example
     ///
