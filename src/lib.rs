@@ -117,7 +117,7 @@
 //!
 //! - [`Future::delay`](`future::FutureExt::delay`) Delay execution for a specified time.
 //! - [`Future::timeout`](`future::FutureExt::timeout`) Cancel the future if the execution takes longer than the specified time.
-//! - [`future::parker`] Suspend a future for a specified amount of time.
+//! - [`Future::park`](`future::FutureExt::park`) Suspend or resume the execution of a future.
 //!
 //! # Tasks
 //!
@@ -129,6 +129,7 @@
 //! - [`Stream::buffer`](`stream::StreamExt::buffer`) Returns a stream which buffers items and flushes them at each interval.
 //! - [`Stream::debounce`](`stream::StreamExt::debounce`) Returns a stream that debounces for the given duration.
 //! - [`Stream::delay`](`stream::StreamExt::delay`) Delay execution for a specified time.
+//! - [`Future::park`](`future::StreamExt::park`) Suspend or resume the execution of a stream.
 //! - [`Stream::sample`](`stream::StreamExt::sample`) Yield the last value received, if any, at each interval.
 //! - [`Stream::throttle`](`stream::StreamExt::throttle`) Filter out all items after the first for a specified time.
 //! - [`Stream::timeout`](`stream::StreamExt::timeout`) Cancel the stream if the execution takes longer than the specified time.
