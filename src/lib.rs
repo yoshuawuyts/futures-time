@@ -70,22 +70,21 @@
 //! }
 //! ```
 //!
-//! # The `Deadline` trait
+//! # The `Timer` trait
 //!
-//! The future returned by [`task::sleep`] implements the [`future::Deadline`]
+//! The future returned by [`task::sleep`] implements the [`future::Timer`]
 //! trait. This represents a future whose deadline can be moved forward into the
 //! future.
 //!
 //! For example, say we have a deadline of `Duration::from_secs(10)`. By calling
-//! `Daedline::push_deadline` the deadline can be moved into the future relative
-//! to now. This functionality is required for methods such as `debounce` and
-//! `Stream::timeout`, which will regularly want to move their deadlines into
+//! `Timer::reset_timer` the timer can be reschedule to trigger at a later time.
+//! This functionality is required for methods such as `debounce` and
+//! `Stream::timeout`, which will regularly want to reschedule their timers to trigger
 //! the future.
 //!
-//! Currently the only type implementing the `Deadline` trait is
+//! Currently the only type implementing the `Timer` trait is
 //! [`task::Sleep`], which is created from a `Duration.` This is in contrast
-//! with [`task::sleep_until`], which takes an `Instant`, and cannot be reset
-//! relative to the present time.
+//! with [`task::sleep_until`], which takes an `Instant`, and cannot be reset.
 //!
 //! # Cancellation
 //!
