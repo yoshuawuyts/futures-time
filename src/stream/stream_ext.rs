@@ -1,4 +1,4 @@
-use crate::channel::{Parker, Receiver};
+use crate::channel::Parker;
 use crate::future::{IntoFuture, Timer};
 
 use futures_core::Stream;
@@ -184,11 +184,12 @@ pub trait StreamExt: Stream {
     /// a suspended state until the channel returns `Parker::Unpark` or the
     /// channel's senders are dropped. The underlying stream will not be polled
     /// while the it is paused.
-    fn park(self, receiver: Receiver<Parker>) -> Park<Self>
+    fn park<I>(self, interval: I) -> Park<Self, I::IntoStream>
     where
         Self: Sized,
+        I: IntoStream<Item = Parker>,
     {
-        Park::new(self, receiver)
+        Park::new(self, interval.into_stream())
     }
 
     /// Yield an item, then ignore subsequent items for a duration.

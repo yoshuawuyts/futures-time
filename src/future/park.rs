@@ -2,7 +2,7 @@ use std::future::Future;
 use std::pin::Pin;
 use std::task::{Context, Poll};
 
-use crate::channel::{Parker, Receiver};
+use crate::channel::Parker;
 
 use futures_core::{ready, Stream};
 use pin_project_lite::pin_project;
@@ -16,11 +16,15 @@ pin_project! {
     /// [`park`]: crate::future::FutureExt::park
     /// [`FutureExt`]: crate::future::FutureExt
     #[must_use = "futures do nothing unless polled or .awaited"]
-    pub struct Park<F> {
+    pub struct Park<F, I>
+    where
+        F: Future,
+        I: Stream<Item = Parker>
+    {
         #[pin]
         future: F,
         #[pin]
-        receiver: Receiver<Parker>,
+        interval: I,
         state: State,
     }
 }
@@ -38,30 +42,38 @@ enum State {
     Completed,
 }
 
-impl<F> Park<F> {
-    pub(super) fn new(future: F, receiver: Receiver<Parker>) -> Self {
+impl<F, I> Park<F, I>
+where
+    F: Future,
+    I: Stream<Item = Parker>,
+{
+    pub(super) fn new(future: F, interval: I) -> Self {
         Self {
             future,
-            receiver,
+            interval,
             state: State::Suspended,
         }
     }
 }
 
-impl<F: Future> Future for Park<F> {
+impl<F, I> Future for Park<F, I>
+where
+    F: Future,
+    I: Stream<Item = Parker>,
+{
     type Output = F::Output;
 
     fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
         let mut this = self.project();
         loop {
             match this.state {
-                State::Suspended => match ready!(this.receiver.as_mut().poll_next(cx)) {
+                State::Suspended => match ready!(this.interval.as_mut().poll_next(cx)) {
                     Some(Parker::Park) => return Poll::Pending,
                     Some(Parker::Unpark) => *this.state = State::Active,
                     None => *this.state = State::NoChannel,
                 },
                 State::Active => {
-                    if let Poll::Ready(Some(Parker::Park)) = this.receiver.as_mut().poll_next(cx) {
+                    if let Poll::Ready(Some(Parker::Park)) = this.interval.as_mut().poll_next(cx) {
                         *this.state = State::Suspended;
                         return Poll::Pending;
                     }

@@ -1,7 +1,7 @@
 use std::pin::Pin;
 use std::task::{Context, Poll};
 
-use crate::channel::{Parker, Receiver};
+use crate::channel::Parker;
 
 use futures_core::{ready, Stream};
 use pin_project_lite::pin_project;
@@ -15,11 +15,15 @@ pin_project! {
     /// [`park`]: crate::future::FutureExt::park
     /// [`StreamExt`]: crate::future::StreamExt
     #[must_use = "futures do nothing unless polled or .awaited"]
-    pub struct Park<S> {
+    pub struct Park<S, I>
+    where
+        S: Stream,
+        I: Stream<Item = Parker>,
+    {
         #[pin]
         stream: S,
         #[pin]
-        receiver: Receiver<Parker>,
+        interval: I,
         state: State,
     }
 }
@@ -37,30 +41,38 @@ enum State {
     Completed,
 }
 
-impl<S> Park<S> {
-    pub(super) fn new(stream: S, receiver: Receiver<Parker>) -> Self {
+impl<S, I> Park<S, I>
+where
+    S: Stream,
+    I: Stream<Item = Parker>,
+{
+    pub(super) fn new(stream: S, interval: I) -> Self {
         Self {
             stream,
-            receiver,
+            interval,
             state: State::Suspended,
         }
     }
 }
 
-impl<S: Stream> Stream for Park<S> {
+impl<S, I> Stream for Park<S, I>
+where
+    S: Stream,
+    I: Stream<Item = Parker>,
+{
     type Item = S::Item;
 
     fn poll_next(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
         let mut this = self.project();
         loop {
             match this.state {
-                State::Suspended => match ready!(this.receiver.as_mut().poll_next(cx)) {
+                State::Suspended => match ready!(this.interval.as_mut().poll_next(cx)) {
                     Some(Parker::Park) => return Poll::Pending,
                     Some(Parker::Unpark) => *this.state = State::Active,
                     None => *this.state = State::NoChannel,
                 },
                 State::Active => {
-                    if let Poll::Ready(Some(Parker::Park)) = this.receiver.as_mut().poll_next(cx) {
+                    if let Poll::Ready(Some(Parker::Park)) = this.interval.as_mut().poll_next(cx) {
                         *this.state = State::Suspended;
                         return Poll::Pending;
                     }

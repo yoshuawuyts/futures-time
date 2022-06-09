@@ -1,6 +1,7 @@
 use core::future::Future;
 
-use crate::channel;
+use crate::channel::Parker;
+use crate::stream::IntoStream;
 
 use super::{Delay, IntoFuture, Park, Timeout};
 
@@ -83,11 +84,12 @@ pub trait FutureExt: Future {
     /// a suspended state until the channel returns `Parker::Unpark` or the
     /// channel's senders are dropped. The underlying future will not be polled
     /// while the it is paused.
-    fn park(self, receiver: channel::Receiver<channel::Parker>) -> Park<Self>
+    fn park<I>(self, interval: I) -> Park<Self, I::IntoStream>
     where
         Self: Sized,
+        I: IntoStream<Item = Parker>,
     {
-        Park::new(self, receiver)
+        Park::new(self, interval.into_stream())
     }
 }
 
