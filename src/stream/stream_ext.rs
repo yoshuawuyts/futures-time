@@ -1,8 +1,9 @@
+use crate::channel::{Parker, Receiver};
 use crate::future::{IntoFuture, Timer};
 
 use futures_core::Stream;
 
-use super::{Buffer, Debounce, Delay, IntoStream, Sample, Throttle, Timeout};
+use super::{Buffer, Debounce, Delay, IntoStream, Park, Sample, Throttle, Timeout};
 
 /// Extend `Stream` with time-based operations.
 pub trait StreamExt: Stream {
@@ -175,6 +176,19 @@ pub trait StreamExt: Stream {
         D: IntoFuture,
     {
         Delay::new(self, deadline.into_future())
+    }
+
+    /// Suspend or resume execution of a stream.
+    ///
+    /// When this method is called the execution of the stream will be put into
+    /// a suspended state until the channel returns `Parker::Unpark` or the
+    /// channel's senders are dropped. The underlying stream will not be polled
+    /// while the it is paused.
+    fn park(self, receiver: Receiver<Parker>) -> Park<Self>
+    where
+        Self: Sized,
+    {
+        Park::new(self, receiver)
     }
 
     /// Yield an item, then ignore subsequent items for a duration.

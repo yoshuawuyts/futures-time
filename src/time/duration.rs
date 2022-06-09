@@ -70,14 +70,6 @@ impl Duration {
     ///
     /// # Panics
     /// This constructor will panic if `secs` is not finite, negative or overflows `Duration`.
-    ///
-    /// # Examples
-    /// ```
-    /// use futures_time::time::Duration;
-    ///
-    /// let dur = Duration::from_secs_f32(2.7);
-    /// assert_eq!(dur, Duration::new(2, 700_000_000));
-    /// ```
     #[must_use]
     #[inline]
     pub fn from_secs_f32(secs: f32) -> Duration {

@@ -152,8 +152,19 @@ pub mod stream;
 pub mod task;
 pub mod time;
 
-#[doc(inline)]
-pub use async_channel as channel;
+/// An async multi-producer multi-consumer channel.
+pub mod channel {
+    /// Suspend or resume execution of a future.
+    #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+    pub enum Parker {
+        /// Put the future into a suspended state.
+        Park,
+        /// Put the future into an active state.
+        Unpark,
+    }
+    #[doc(inline)]
+    pub use async_channel::*;
+}
 
 /// The `futures-time` prelude.
 pub mod prelude {
