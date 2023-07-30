@@ -21,7 +21,7 @@ pub trait FutureExt: Future {
     ///
     /// ```
     /// use futures_time::prelude::*;
-    /// use futures_time::time::{Instant, Duration};
+    /// use std::time::{Instant, Duration};
     /// use std::io;
     ///
     /// fn main() {
@@ -59,7 +59,7 @@ pub trait FutureExt: Future {
     ///
     /// ```
     /// use futures_time::prelude::*;
-    /// use futures_time::time::{Instant, Duration};
+    /// use std::time::{Instant, Duration};
     ///
     /// fn main() {
     ///     async_io::block_on(async {

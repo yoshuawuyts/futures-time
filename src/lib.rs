@@ -16,7 +16,7 @@
 //!
 //! ```
 //! use futures_time::prelude::*;
-//! use futures_time::time::Duration;
+//! use std::time::Duration;
 //!
 //! fn main() {
 //!     async_io::block_on(async {
@@ -32,7 +32,7 @@
 //!
 //! ```
 //! use futures_time::prelude::*;
-//! use futures_time::time::Duration;
+//! use std::time::Duration;
 //!
 //! fn main() {
 //!     async_io::block_on(async {
@@ -53,7 +53,7 @@
 //! ```
 //! use futures_lite::prelude::*;
 //! use futures_time::prelude::*;
-//! use futures_time::time::Duration;
+//! use std::time::Duration;
 //! use futures_time::stream;
 //!
 //! fn main() {
@@ -97,7 +97,7 @@
 //! use futures_lite::prelude::*;
 //! use futures_time::prelude::*;
 //! use futures_time::channel;
-//! use futures_time::time::Duration;
+//! use std::time::Duration;
 //!
 //! fn main() {
 //!     async_io::block_on(async {
@@ -150,8 +150,6 @@ pub(crate) mod utils;
 
 pub mod future;
 pub mod stream;
-pub mod task;
-pub mod time;
 
 /// An async multi-producer multi-consumer channel.
 pub mod channel {

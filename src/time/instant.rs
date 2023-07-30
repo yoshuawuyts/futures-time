@@ -19,7 +19,7 @@ impl Instant {
     /// # Examples
     ///
     /// ```
-    /// use futures_time::time::Instant;
+    /// use std::time::Instant;
     ///
     /// let now = Instant::now();
     /// ```

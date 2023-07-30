@@ -106,8 +106,8 @@ where
 #[cfg(test)]
 mod test {
     use crate::prelude::*;
-    use crate::time::Duration;
     use futures_lite::prelude::*;
+    use std::time::Duration;
 
     #[test]
     fn all_values_debounce() {
@@ -118,7 +118,7 @@ mod test {
             let mut counter = 0;
             crate::stream::interval(interval)
                 .take(10)
-                .debounce(debounce)
+                .debounce(crate::future::sleep(debounce))
                 .for_each(|_| counter += 1)
                 .await;
 
@@ -135,7 +135,7 @@ mod test {
             let mut counter = 0;
             crate::stream::interval(interval)
                 .take(10)
-                .debounce(debounce)
+                .debounce(crate::future::sleep(debounce))
                 .for_each(|_| counter += 1)
                 .await;
 

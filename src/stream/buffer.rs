@@ -102,8 +102,9 @@ impl<S: Stream, I: Stream> Stream for Buffer<S, I> {
 #[cfg(test)]
 mod test {
     use crate::prelude::*;
-    use crate::time::Duration;
+    use crate::stream;
     use futures_lite::prelude::*;
+    use std::time::Duration;
 
     #[test]
     fn buffer_all_values() {
@@ -114,7 +115,7 @@ mod test {
             let mut counter = 0;
             crate::stream::interval(interval)
                 .take(10)
-                .buffer(buffer)
+                .buffer(stream::interval(buffer))
                 .for_each(|buf| counter += buf.len())
                 .await;
 
@@ -131,7 +132,7 @@ mod test {
             let mut counter = 0;
             crate::stream::interval(interval)
                 .take(10)
-                .buffer(buffer)
+                .buffer(stream::interval(buffer))
                 .for_each(|buf| counter += buf.len())
                 .await;
 

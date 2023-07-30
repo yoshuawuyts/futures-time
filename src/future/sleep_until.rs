@@ -5,7 +5,7 @@ use std::task::{Context, Poll};
 use async_io::Timer;
 use pin_project_lite::pin_project;
 
-use crate::time::Instant;
+use std::time::Instant;
 
 /// Sleeps until the specified instant.
 pub fn sleep_until(deadline: Instant) -> SleepUntil {
