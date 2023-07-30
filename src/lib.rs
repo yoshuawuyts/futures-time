@@ -129,7 +129,7 @@
 //! - [`Stream::buffer`](`stream::StreamExt::buffer`) Returns a stream which buffers items and flushes them at each interval.
 //! - [`Stream::debounce`](`stream::StreamExt::debounce`) Returns a stream that debounces for the given duration.
 //! - [`Stream::delay`](`stream::StreamExt::delay`) Delay execution for a specified time.
-//! - [`Future::park`](`future::StreamExt::park`) Suspend or resume the execution of a stream.
+//! - [`Stream::park`](`stream::StreamExt::park`) Suspend or resume the execution of a stream.
 //! - [`Stream::sample`](`stream::StreamExt::sample`) Yield the last value received, if any, at each interval.
 //! - [`Stream::throttle`](`stream::StreamExt::throttle`) Filter out all items after the first for a specified time.
 //! - [`Stream::timeout`](`stream::StreamExt::timeout`) Cancel the stream if the execution takes longer than the specified time.
