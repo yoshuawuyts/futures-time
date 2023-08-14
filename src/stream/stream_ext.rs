@@ -34,7 +34,7 @@ pub trait StreamExt: Stream {
     /// ```
     /// use futures_lite::prelude::*;
     /// use futures_time::prelude::*;
-    /// use futures_time::time::{Instant, Duration};
+    /// use std::time::{Instant, Duration};
     /// use futures_time::stream;
     ///
     /// fn main() {
@@ -75,7 +75,7 @@ pub trait StreamExt: Stream {
     /// ```
     /// use futures_lite::prelude::*;
     /// use futures_time::prelude::*;
-    /// use futures_time::time::{Instant, Duration};
+    /// use std::time::{Instant, Duration};
     /// use futures_time::stream;
     ///
     /// fn main() {
@@ -121,7 +121,7 @@ pub trait StreamExt: Stream {
     /// ```
     /// use futures_lite::prelude::*;
     /// use futures_time::prelude::*;
-    /// use futures_time::time::{Instant, Duration};
+    /// use std::time::{Instant, Duration};
     /// use futures_time::stream;
     ///
     /// fn main() {
@@ -158,7 +158,7 @@ pub trait StreamExt: Stream {
     /// ```
     /// use futures_lite::prelude::*;
     /// use futures_time::prelude::*;
-    /// use futures_time::time::{Instant, Duration};
+    /// use std::time::{Instant, Duration};
     /// use futures_lite::stream;
     ///
     /// fn main() {
@@ -218,7 +218,7 @@ pub trait StreamExt: Stream {
     /// ```
     /// use futures_lite::prelude::*;
     /// use futures_time::prelude::*;
-    /// use futures_time::time::Duration;
+    /// use std::time::Duration;
     /// use futures_time::stream;
     ///
     /// fn main() {
@@ -258,7 +258,7 @@ pub trait StreamExt: Stream {
     /// ```
     /// use futures_lite::prelude::*;
     /// use futures_time::prelude::*;
-    /// use futures_time::time::{Instant, Duration};
+    /// use std::time::{Instant, Duration};
     /// use futures_lite::stream;
     /// use std::io;
     ///

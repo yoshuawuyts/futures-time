@@ -5,7 +5,7 @@ use std::task::{Context, Poll};
 use async_io::Timer;
 use futures_core::stream::Stream;
 
-use crate::time::{Duration, Instant};
+use std::time::{Duration, Instant};
 
 /// Creates a new stream that yields at a set interval.
 ///

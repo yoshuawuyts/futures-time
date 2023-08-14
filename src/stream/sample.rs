@@ -101,8 +101,8 @@ impl<S: Stream, I: Stream> Stream for Sample<S, I> {
 #[cfg(test)]
 mod test {
     use crate::prelude::*;
-    use crate::time::Duration;
     use futures_lite::prelude::*;
+    use std::time::Duration;
 
     #[test]
     fn smoke() {
@@ -116,7 +116,7 @@ mod test {
             let mut counter = 0;
             crate::stream::interval(interval)
                 .take(take)
-                .sample(throttle)
+                .sample(crate::stream::interval(throttle))
                 .for_each(|_| counter += 1)
                 .await;
 

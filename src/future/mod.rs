@@ -23,7 +23,7 @@
 //! use futures_lite::prelude::*;
 //! use futures_time::prelude::*;
 //! use futures_time::channel;
-//! use futures_time::time::Duration;
+//! use std::time::Duration;
 //!
 //! fn main() {
 //!     async_io::block_on(async {
@@ -44,6 +44,7 @@ mod future_ext;
 mod into_future;
 mod park;
 mod relative_future;
+mod sleep;
 mod timeout;
 
 pub use delay::Delay;
@@ -51,4 +52,5 @@ pub use future_ext::FutureExt;
 pub use into_future::IntoFuture;
 pub use park::Park;
 pub use relative_future::Timer;
+pub use sleep::{sleep, Sleep};
 pub use timeout::Timeout;
