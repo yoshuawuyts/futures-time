@@ -115,25 +115,21 @@
 //!
 //! # Futures
 //!
+//! - [`wait_for`][`future::sleep`] Wait for the specified amount of time.
 //! - [`Future::delay`](`future::FutureExt::delay`) Delay execution for a specified time.
 //! - [`Future::timeout`](`future::FutureExt::timeout`) Cancel the future if the execution takes longer than the specified time.
-//! - [`Future::park`](`future::FutureExt::park`) Suspend or resume the execution of a future.
-//!
-//! # Tasks
-//!
-//! - [`task::sleep_until`] Sleeps until the specified deadline.
-//! - [`task::sleep`] Sleeps for the specified amount of time.
+//! - [`Future::wait_while`](`future::FutureExt::park`) Suspend or resume the execution of a future.
 //!
 //! # Streams
 //!
+//! - [`interval`](`stream::interval`) Creates a new stream that yields at a set interval.
 //! - [`Stream::buffer`](`stream::StreamExt::buffer`) Returns a stream which buffers items and flushes them at each interval.
 //! - [`Stream::debounce`](`stream::StreamExt::debounce`) Returns a stream that debounces for the given duration.
 //! - [`Stream::delay`](`stream::StreamExt::delay`) Delay execution for a specified time.
-//! - [`Stream::park`](`stream::StreamExt::park`) Suspend or resume the execution of a stream.
+//! - [`Stream::wait_while`](`stream::StreamExt::park`) Suspend or resume the execution of a stream.
 //! - [`Stream::sample`](`stream::StreamExt::sample`) Yield the last value received, if any, at each interval.
 //! - [`Stream::throttle`](`stream::StreamExt::throttle`) Filter out all items after the first for a specified time.
 //! - [`Stream::timeout`](`stream::StreamExt::timeout`) Cancel the stream if the execution takes longer than the specified time.
-//! - [`stream::interval`](`stream::interval`) Creates a new stream that yields at a set interval.
 //!
 //! # Re-exports
 //!
@@ -157,9 +153,9 @@ pub mod channel {
     #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
     pub enum Parker {
         /// Put the future into a suspended state.
-        Park,
+        Suspend,
         /// Put the future into an active state.
-        Unpark,
+        Resume,
     }
     #[doc(inline)]
     pub use async_channel::*;

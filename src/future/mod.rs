@@ -45,7 +45,6 @@ mod into_future;
 mod park;
 mod relative_future;
 mod sleep;
-mod sleep_until;
 mod timeout;
 
 pub use delay::Delay;
@@ -54,5 +53,4 @@ pub use into_future::IntoFuture;
 pub use park::Park;
 pub use relative_future::Timer;
 pub use sleep::{sleep, Sleep};
-pub use sleep_until::{sleep_until, SleepUntil};
 pub use timeout::Timeout;
