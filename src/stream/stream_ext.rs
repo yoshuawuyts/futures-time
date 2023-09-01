@@ -3,7 +3,7 @@ use crate::future::{IntoFuture, Timer};
 
 use futures_core::Stream;
 
-use super::{Buffer, Debounce, Delay, IntoStream, Park, Sample, Throttle, Timeout};
+use super::{Buffer, Debounce, Delay, IntoStream, Park, Sample, Throttle, Timeout, TimeoutOnce};
 
 /// Extend `Stream` with time-based operations.
 pub trait StreamExt: Stream {
@@ -260,6 +260,7 @@ pub trait StreamExt: Stream {
     /// use futures_time::prelude::*;
     /// use futures_time::time::{Instant, Duration};
     /// use futures_lite::stream;
+    /// use futures_time::stream::interval;
     /// use std::io;
     ///
     /// fn main() {
@@ -277,6 +278,11 @@ pub trait StreamExt: Stream {
     ///             .next()
     ///             .await;
     ///         assert_eq!(res.unwrap().unwrap(), "meow"); // success
+    ///
+    ///         let mut s = interval(Duration::from_millis(50)) // yields every 50ms
+    ///              .timeout(Duration::from_millis(80));       // errors if not producing every 80ms
+    ///         assert!(s.next().await.is_some());              // success
+    ///         assert!(s.next().await.is_some());              // further values are still yielded, since it was produced before the timeout reset again
     ///     });
     /// }
     /// ```
@@ -287,6 +293,59 @@ pub trait StreamExt: Stream {
         D::IntoFuture: Timer,
     {
         Timeout::new(self, deadline.into_future())
+    }
+
+    /// Cutoff an infinite stream from producing new values after a given time span.
+    /// This is different from [`timeout()`] in that the timer is run once,
+    /// rather than reset if the stream yields a new value before the timer is done.
+    ///
+    /// Typically timeouts are, as the name implies, based on _time_. However
+    /// this method can time out based on any future. This can be useful in
+    /// combination with channels, as it allows (long-lived) streams to be
+    /// cancelled based on some external event.
+    ///
+    /// When a timeout is returned, the stream will be dropped and destructors
+    /// will be run.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use futures_lite::prelude::*;
+    /// use futures_time::prelude::*;
+    /// use futures_time::time::{Instant, Duration};
+    /// use futures_lite::stream;
+    /// use futures_time::stream::interval;
+    /// use std::io;
+    ///
+    /// fn main() {
+    ///     async_io::block_on(async {
+    ///         let res = stream::once("meow")
+    ///             .delay(Duration::from_millis(100))       // longer delay
+    ///             .timeout_once(Duration::from_millis(50)) // shorter timeout
+    ///             .next()
+    ///             .await;
+    ///         assert!(res.is_none()); // finished early
+    ///
+    ///         let res = stream::repeat("meow")
+    ///             .delay(Duration::from_millis(50))        // shorter delay
+    ///             .timeout_once(Duration::from_millis(80)) // longer timeout
+    ///             .next()
+    ///             .await;
+    ///         assert_eq!(res.unwrap(), "meow");  // success
+    ///
+    ///         let mut s = interval(Duration::from_millis(50)) // shorter delay
+    ///             .timeout_once(Duration::from_millis(80));   // longer timeout
+    ///         assert!(s.next().await.is_some());              // success
+    ///         assert!(s.next().await.is_none());              // 80ms timer timed out before the second element was produced
+    ///     });
+    /// }
+    /// ```
+    fn timeout_once<D>(self, deadline: D) -> TimeoutOnce<Self, D::IntoFuture>
+    where
+        Self: Sized,
+        D: IntoFuture,
+    {
+        TimeoutOnce::new(self, deadline.into_future())
     }
 }
 
