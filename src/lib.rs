@@ -18,14 +18,12 @@
 //! use futures_time::prelude::*;
 //! use futures_time::time::Duration;
 //!
-//! fn main() {
-//!     async_io::block_on(async {
-//!         let res = async { "meow" }
-//!             .delay(Duration::from_millis(100))
-//!             .await;
-//!         assert_eq!(res, "meow");
-//!     })
-//! }
+//! async_io::block_on(async {
+//!     let res = async { "meow" }
+//!         .delay(Duration::from_millis(100))
+//!         .await;
+//!     assert_eq!(res, "meow");
+//! })
 //! ```
 //!
 //! __Error if a future takes longer than 200ms__
@@ -34,15 +32,13 @@
 //! use futures_time::prelude::*;
 //! use futures_time::time::Duration;
 //!
-//! fn main() {
-//!     async_io::block_on(async {
-//!         let res = async { "meow" }
-//!             .delay(Duration::from_millis(100))
-//!             .timeout(Duration::from_millis(200))
-//!             .await;
-//!         assert_eq!(res.unwrap(), "meow");
-//!     })
-//! }
+//! async_io::block_on(async {
+//!     let res = async { "meow" }
+//!         .delay(Duration::from_millis(100))
+//!         .timeout(Duration::from_millis(200))
+//!         .await;
+//!     assert_eq!(res.unwrap(), "meow");
+//! })
 //! ```
 //!
 //! __Throttle a stream__
@@ -56,18 +52,16 @@
 //! use futures_time::time::Duration;
 //! use futures_time::stream;
 //!
-//! fn main() {
-//!     async_io::block_on(async {
-//!         let mut counter = 0;
-//!         stream::interval(Duration::from_millis(100))  // Yield an item every 100ms
-//!             .take(4)                                  // Stop after 4 items
-//!             .throttle(Duration::from_millis(300))     // Only let an item through every 300ms
-//!             .for_each(|_| counter += 1)               // Increment a counter for each item
-//!             .await;
+//! async_io::block_on(async {
+//!     let mut counter = 0;
+//!     stream::interval(Duration::from_millis(100))  // Yield an item every 100ms
+//!         .take(4)                                  // Stop after 4 items
+//!         .throttle(Duration::from_millis(300))     // Only let an item through every 300ms
+//!         .for_each(|_| counter += 1)               // Increment a counter for each item
+//!         .await;
 //!
-//!         assert_eq!(counter, 2);
-//!     })
-//! }
+//!     assert_eq!(counter, 2);
+//! })
 //! ```
 //!
 //! # The `Timer` trait
@@ -99,18 +93,16 @@
 //! use futures_time::channel;
 //! use futures_time::time::Duration;
 //!
-//! fn main() {
-//!     async_io::block_on(async {
-//!         let (send, mut recv) = channel::bounded::<()>(1); // create a new send/receive pair
-//!         let mut counter = 0;
-//!         let value = async { "meow" }
-//!             .delay(Duration::from_millis(100))
-//!             .timeout(recv.next()) // time-out when the sender emits a message
-//!             .await;
+//! async_io::block_on(async {
+//!     let (send, mut recv) = channel::bounded::<()>(1); // create a new send/receive pair
+//!     let mut counter = 0;
+//!     let value = async { "meow" }
+//!         .delay(Duration::from_millis(100))
+//!         .timeout(recv.next()) // time-out when the sender emits a message
+//!         .await;
 //!
-//!         assert_eq!(value.unwrap(), "meow");
-//!     })
-//! }
+//!     assert_eq!(value.unwrap(), "meow");
+//! })
 //! ```
 //!
 //! # Futures
