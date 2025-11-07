@@ -64,8 +64,8 @@ pub trait StreamExt: Stream {
     ///
     /// # Future Improvements
     ///
-    /// - Lending iterators would allow for internal reusing of the buffer.
-    /// Though different from `Iterator::windows`, it could be more efficient.
+    /// - Lending iterators would allow for internal reusing of the buffer. Though different from
+    ///   `Iterator::windows`, it could be more efficient.
     /// - Contexts/capabilities would enable custom allocators to be used.
     ///
     /// # Example
