@@ -77,9 +77,9 @@ impl From<std::time::Instant> for Instant {
     }
 }
 
-impl Into<std::time::Instant> for Instant {
-    fn into(self) -> std::time::Instant {
-        self.0
+impl From<Instant> for std::time::Instant {
+    fn from(val: Instant) -> Self {
+        val.0
     }
 }
 
