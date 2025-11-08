@@ -97,9 +97,9 @@ impl From<std::time::Duration> for Duration {
     }
 }
 
-impl Into<std::time::Duration> for Duration {
-    fn into(self) -> std::time::Duration {
-        self.0
+impl From<Duration> for std::time::Duration {
+    fn from(val: Duration) -> Self {
+        val.0
     }
 }
 

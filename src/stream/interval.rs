@@ -48,7 +48,10 @@ impl Stream for Interval {
             Poll::Pending => return Poll::Pending,
         };
         let interval = self.interval;
-        let _ = std::mem::replace(&mut self.timer, Timer::after(interval.into()));
+        drop(std::mem::replace(
+            &mut self.timer,
+            Timer::after(interval.into()),
+        ));
         Poll::Ready(Some(instant.into()))
     }
 }
