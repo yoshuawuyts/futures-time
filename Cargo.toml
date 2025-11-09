@@ -17,9 +17,9 @@ authors = [
 
 [dependencies]
 futures-core = "0.3.19"
-async-io = "1.6.0"
+async-io = "2.0.0"
 pin-project-lite = "0.2.8"
 async-channel = "1.6.1"
 
 [dev-dependencies]
-futures-lite = "1.12.0"
+futures-lite = "2.6.0"
