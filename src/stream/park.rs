@@ -67,7 +67,7 @@ where
         loop {
             match this.state {
                 State::Suspended => match ready!(this.interval.as_mut().poll_next(cx)) {
-                    Some(Parker::Park) => return Poll::Pending,
+                    Some(Parker::Park) => continue,
                     Some(Parker::Unpark) => *this.state = State::Active,
                     None => *this.state = State::NoChannel,
                 },
