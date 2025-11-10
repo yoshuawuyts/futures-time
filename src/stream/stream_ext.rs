@@ -243,7 +243,9 @@ pub trait StreamExt: Stream {
     /// When a timeout is returned, the stream will be dropped and destructors
     /// will be run.
     ///
-    /// # Example
+    /// # Examples
+    ///
+    /// Timeout based on timing.
     ///
     /// ```
     /// use futures_lite::prelude::*;
@@ -268,11 +270,33 @@ pub trait StreamExt: Stream {
     ///     assert_eq!(res.unwrap().unwrap(), "meow"); // success
     /// });
     /// ```
+    ///
+    /// Cancellation via timeout using a channel.
+    ///
+    /// ```
+    /// use futures_lite::prelude::*;
+    /// use futures_time::prelude::*;
+    /// use futures_time::channel;
+    /// use futures_time::time::{Instant, Duration};
+    /// use futures_lite::{stream, future};
+    /// use std::io;
+    ///
+    /// async_io::block_on(async {
+    ///     let (send, mut recv) = channel::bounded::<()>(1); // create a new send/receive pair
+    ///
+    ///     let mut stream = stream::once("meow")
+    ///         .delay(std::future::pending::<()>())
+    ///         .timeout(recv.next()); // time-out when the sender emits a message
+    ///     let cancel = async { send.send(()).await };
+    ///
+    ///     let (result, _) = future::zip(stream.next(), cancel).await;
+    ///     assert_eq!(result.unwrap().unwrap_err().kind(), io::ErrorKind::TimedOut); // error
+    /// });
+    /// ```
     fn timeout<D>(self, deadline: D) -> Timeout<Self, D::IntoFuture>
     where
         Self: Sized,
         D: IntoFuture,
-        D::IntoFuture: Timer,
     {
         Timeout::new(self, deadline.into_future())
     }
