@@ -9,9 +9,7 @@ readme = "README.md"
 edition = "2018"
 keywords = []
 categories = []
-authors = [
-    "Yoshua Wuyts <rust@yosh.is>"
-]
+authors = ["Yoshua Wuyts <rust@yosh.is>"]
 
 [features]
 default = ["dep:async-io"]
