@@ -173,9 +173,28 @@ pub trait StreamExt: Stream {
     /// Suspend or resume execution of a stream.
     ///
     /// When this method is called the execution of the stream will be put into
-    /// a suspended state until the channel returns `Parker::Unpark` or the
-    /// channel's senders are dropped. The underlying stream will not be polled
-    /// while the it is paused.
+    /// a suspended state until the interval stream returns `Parker::Unpark`.
+    /// The underlying stream will not be polled while the it is paused.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use futures_lite::prelude::*;
+    /// use futures_lite::stream;
+    /// use futures_time::prelude::*;
+    /// use futures_time::channel::Parker;
+    /// use futures_time::time::{Instant, Duration};
+    ///
+    /// async_io::block_on(async {
+    ///     let now = Instant::now();
+    ///     let delay = Duration::from_millis(100);
+    ///     let _ = stream::once("meow")
+    ///         .park(stream::once(Parker::Unpark).delay(delay))
+    ///         .next()
+    ///         .await;
+    ///     assert!(now.elapsed() >= *delay);
+    /// });
+    /// ```
     fn park<I>(self, interval: I) -> Park<Self, I::IntoStream>
     where
         Self: Sized,
